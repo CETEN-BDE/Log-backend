@@ -1,0 +1,16 @@
+openapi: "3.0.3"
+info:
+  title: OpenAPI - Log BDE
+  version: "1.0"
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit/
+servers:
+  - url: http://localhost:8080/
+  - url: https://log-ceten.work.gd/api/
+paths:
+  /test:  
+    get:
+      responses:
+        "200":
+          description: OK
