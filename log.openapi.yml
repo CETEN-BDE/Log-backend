@@ -1,16 +1,31 @@
 openapi: "3.0.3"
 info:
   title: OpenAPI - Log BDE
-  version: "1.0"
+  version: "1.0.0"
   license:
     name: MIT
     url: https://opensource.org/license/mit/
 servers:
-  - url: http://localhost:8080/
-  - url: https://log-ceten.work.gd/api/
+  - url: http://localhost:8080
+  - url: https://log-ceten.work.gd/api
 paths:
-  /test:  
+  /ping:
     get:
       responses:
-        "200":
-          description: OK
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pong'
+components:
+  schemas:
+    # base types
+    Pong:
+      type: object
+      required:
+        - ping
+      properties:
+        ping:
+          type: string
+          example: pong
