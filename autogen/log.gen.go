@@ -20,8 +20,9 @@ import (
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
 
-// HealthCheck defines model for HealthCheck.
-type HealthCheck struct {
+// Health defines model for Health.
+type Health struct {
+	Nb     int    `json:"nb" bson:"nb"`
 	Status string `json:"status" bson:"status"`
 }
 
@@ -85,7 +86,7 @@ type GetHealthResponseObject interface {
 	VisitGetHealthResponse(w http.ResponseWriter) error
 }
 
-type GetHealth200JSONResponse HealthCheck
+type GetHealth200JSONResponse Health
 
 func (response GetHealth200JSONResponse) VisitGetHealthResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -139,12 +140,13 @@ func (sh *strictHandler) GetHealth(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/1yRT4/TMBDFv0o0cEzjQC+Vb/wTVALBgVvVg3GmiVvHY+wJ7CrKd1+N0+5We/Kz/J41",
-	"7zczWBojBQycQc+Q7YCjKfIbGs/DpwHtRa4xUcTEDlcfG56KwgczRo+ggS5QAz9G0ZmTCz0sSw0J/04u",
-	"YQf6cIsdn33054yWYRGjCyeSH72zGDKKDGYU14/9b6hhSh40DMwxa6UoYsg0JYsNpV5dQ2p0rGCpgR2X",
-	"oX5GDB9+7atN9Z366uPnL1DDP0zZUQAN75q2acUuv5noQMO2aZst1BAND6WgGgoIkT2yHALCsKOw70DD",
-	"V+QVFUjXHCnkldH7tpXDUmAMJWhi9M6WqDpnmeBGXNTbhCfQ8Ea9rERd96Hul1FgdZhtcpHXHutzZW/v",
-	"4siYpCjow3yHTivlyRo/UGa9a3fSfn6F1lO/scgYmv+ULk3fKUGzHJenAAAA//9C8onmLgIAAA==",
+	"H4sIAAAAAAAC/1yRT2/UMBDFv8rqwTGNU3qpfAOBYCUQHLhVPbjeaeKu4zH2LH8U5buj8abLn0s8it94",
+	"3vvNAs9z5kRJKuyC6ieaXSs/kIsyaZULZyoSqP1PD/qln27OkWCvO8ivTLAISWikgrVDFSen+o8OfMRF",
+	"WqWENGJdOxT6dgqFDrB3z22dzri/iPnhibxgVXVIj6zPxuApVWp+3KyqT/uv6HAqERaTSK7WGM6UKp+K",
+	"p57LaLYmMwcx6lKCNGefM6XXX/a7q91HHndv3r5Dh+9UauAEi+t+6AeV62suB1jc9EN/gw7ZydRSmukC",
+	"ayTRQ4k5CZz2B1i8J9lwauCaOdUzzFfDoIfnJJRao8s5Bt9azVNVB89b0eploUdYvDB/1ma2nZltQuN0",
+	"oOpLyHKOcL7Z+Yn8Ue9VUaloRti75S9q1pjI3sWJq9jb4VaDL/9RjTxeeRJK/Q8ux348GKWy3q+/AwAA",
+	"///0Tsr0TQIAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

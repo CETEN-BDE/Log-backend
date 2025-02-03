@@ -17,15 +17,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthCheck'
+                $ref: '#/components/schemas/Health'
 components:
   schemas:
     # base types
-    HealthCheck:
+    Health:
       type: object
       required:
         - status
+        - nb
       properties:
         status:
           type: string
           example: "ok"
+        nb:
+          type: integer
+          example: 1
