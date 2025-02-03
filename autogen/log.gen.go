@@ -20,16 +20,16 @@ import (
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
 
-// Pong defines model for Pong.
-type Pong struct {
-	Ping string `json:"ping" bson:"ping"`
+// HealthCheck defines model for HealthCheck.
+type HealthCheck struct {
+	Status string `json:"status" bson:"status"`
 }
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /ping)
-	GetPing(ctx echo.Context) error
+	// (GET /health)
+	GetHealth(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -37,12 +37,12 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface `bson:"handler"`
 }
 
-// GetPing converts echo context to params.
-func (w *ServerInterfaceWrapper) GetPing(ctx echo.Context) error {
+// GetHealth converts echo context to params.
+func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetPing(ctx)
+	err = w.Handler.GetHealth(ctx)
 	return err
 }
 
@@ -74,20 +74,20 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/ping", wrapper.GetPing)
+	router.GET(baseURL+"/health", wrapper.GetHealth)
 
 }
 
-type GetPingRequestObject struct {
+type GetHealthRequestObject struct {
 }
 
-type GetPingResponseObject interface {
-	VisitGetPingResponse(w http.ResponseWriter) error
+type GetHealthResponseObject interface {
+	VisitGetHealthResponse(w http.ResponseWriter) error
 }
 
-type GetPing200JSONResponse Pong
+type GetHealth200JSONResponse HealthCheck
 
-func (response GetPing200JSONResponse) VisitGetPingResponse(w http.ResponseWriter) error {
+func (response GetHealth200JSONResponse) VisitGetHealthResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -97,8 +97,8 @@ func (response GetPing200JSONResponse) VisitGetPingResponse(w http.ResponseWrite
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (GET /ping)
-	GetPing(ctx context.Context, request GetPingRequestObject) (GetPingResponseObject, error)
+	// (GET /health)
+	GetHealth(ctx context.Context, request GetHealthRequestObject) (GetHealthResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -113,23 +113,23 @@ type strictHandler struct {
 	middlewares []StrictMiddlewareFunc `bson:"middlewares"`
 }
 
-// GetPing operation middleware
-func (sh *strictHandler) GetPing(ctx echo.Context) error {
-	var request GetPingRequestObject
+// GetHealth operation middleware
+func (sh *strictHandler) GetHealth(ctx echo.Context) error {
+	var request GetHealthRequestObject
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetPing(ctx.Request().Context(), request.(GetPingRequestObject))
+		return sh.ssi.GetHealth(ctx.Request().Context(), request.(GetHealthRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetPing")
+		handler = middleware(handler, "GetHealth")
 	}
 
 	response, err := handler(ctx, request)
 
 	if err != nil {
 		return err
-	} else if validResponse, ok := response.(GetPingResponseObject); ok {
-		return validResponse.VisitGetPingResponse(ctx.Response())
+	} else if validResponse, ok := response.(GetHealthResponseObject); ok {
+		return validResponse.VisitGetHealthResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -139,12 +139,12 @@ func (sh *strictHandler) GetPing(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/1yRQY/TMBCF/0o0cEzjQC+VbyAQqgSiB25VD8aZJi6JZ7CnsKso/301Tru72tNMnPfs",
-	"ed/M4Gliihglg50h+wEnV9oDxV4rJ2JMErCcclhP8cFNPCJYYNXVII+sX1mSKpalhoR/ryFhB/a42k7P",
-	"Kvp9QS+wqCzEM+mNY/AYM2ob3aSqH/tfUMM1jWBhEOFsjSHGmOmaPDaUenMzmSmIgaUGCVKG+skYPx32",
-	"1ab6Tn31+ctXqOEfphwogoUPTdu0KtfbHAewsG3aZgs1sJOhBDX3pD2KFoXgJFDcd2DhG8ohlNwJM1PM",
-	"K52PbavFUxSMxeaYx+CL0Vyyvn6HrN37hGew8M68bMHcVmAK/0Kow+xTYFmHZ5Tq/qj+V0XGpOnAHudX",
-	"vKwxI3k3DpTF7tqdRp7f8Byp33gUjM1/Sn+avjPKYzktTwEAAP//yX4TmxoCAAA=",
+	"H4sIAAAAAAAC/1yRT4/TMBDFv0o0cEzjQC+Vb/wTVALBgVvVg3GmiVvHY+wJ7CrKd1+N0+5We/Kz/J41",
+	"7zczWBojBQycQc+Q7YCjKfIbGs/DpwHtRa4xUcTEDlcfG56KwgczRo+ggS5QAz9G0ZmTCz0sSw0J/04u",
+	"YQf6cIsdn33054yWYRGjCyeSH72zGDKKDGYU14/9b6hhSh40DMwxa6UoYsg0JYsNpV5dQ2p0rGCpgR2X",
+	"oX5GDB9+7atN9Z366uPnL1DDP0zZUQAN75q2acUuv5noQMO2aZst1BAND6WgGgoIkT2yHALCsKOw70DD",
+	"V+QVFUjXHCnkldH7tpXDUmAMJWhi9M6WqDpnmeBGXNTbhCfQ8Ea9rERd96Hul1FgdZhtcpHXHutzZW/v",
+	"4siYpCjow3yHTivlyRo/UGa9a3fSfn6F1lO/scgYmv+ULk3fKUGzHJenAAAA//9C8onmLgIAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

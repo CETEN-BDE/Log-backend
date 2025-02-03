@@ -9,23 +9,23 @@ servers:
   - url: http://localhost:8080
   - url: https://log-ceten.work.gd/api
 paths:
-  /ping:
+  /health:
     get:
-      responses:
+      responses: 
         '200':
-          description: pet response
+          description: "Health check"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pong'
+                $ref: '#/components/schemas/HealthCheck'
 components:
   schemas:
     # base types
-    Pong:
+    HealthCheck:
       type: object
       required:
-        - ping
+        - status
       properties:
-        ping:
+        status:
           type: string
-          example: pong
+          example: "ok"
