@@ -1,14 +1,16 @@
 package db
 
 import (
-    "log"
-    "gorm.io/driver/mysql"
-    "gorm.io/gorm"
 	"errors"
+	"log"
+	"os"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func InitDB() (*gorm.DB, error) {
-    dsn := "root:changeme@tcp(127.0.0.1:3306)/log?charset=utf8mb4&parseTime=True&loc=Local"
+    dsn := os.Getenv("LOG_BACKEND_DSN")
     db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
     if err != nil {
         log.Fatalf("open db error: %v", err)

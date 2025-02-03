@@ -10,6 +10,8 @@ require (
 	gorm.io/gorm v1.25.12
 )
 
+require github.com/joho/godotenv v1.5.1
+
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
