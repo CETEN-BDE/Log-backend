@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"log-backend/api"
 	"log-backend/autogen"
 	"log-backend/internal/db"
@@ -14,7 +13,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logrus.Fatal("Error loading .env file")
 	}
 	
 	// Open a database connection
@@ -33,5 +32,5 @@ func main() {
 	autogen.RegisterHandlers(e, server)
 
 	// And we serve HTTP until the world ends.
-	log.Fatal(e.Start("0.0.0.0:8080"))
+	logrus.Fatal(e.Start("0.0.0.0:8080"))
 }

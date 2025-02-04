@@ -7,18 +7,133 @@ info:
     url: https://opensource.org/license/mit/
 servers:
   - url: http://localhost:8080
-  - url: https://log-ceten.work.gd/api
+  - url: https://log.ceten.fr/api
 paths:
   /health:
     get:
-      responses: 
-        '200':
+      responses:
+        "200":
           description: "Health check"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Health'
+                $ref: "#/components/schemas/Health"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+  /login:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      security: []
+      responses:
+        "200":
+          description: >
+            Successfully authenticated.
+            The session ID is returned in a cookie named `JSESSIONID`. You need to include this cookie in subsequent requests.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: CETEN=abcde12345; Path=/; HttpOnly
+
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+  /register:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      security: []
+      responses:
+        "200":
+          description: "Register"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: "Account created"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "403":
+          description: "Email already used"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorMessage"
+  /planning:
+    get:
+      security:
+        - BDE: []
+      responses:
+        "200":
+          description: "Planning"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+                    example: "Planning"
 components:
+  securitySchemes:
+    Ceten:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    BDE:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    Admin:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     # base types
     Health:
@@ -33,3 +148,23 @@ components:
         nb:
           type: integer
           example: 1
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "jean.michel@telecomnancy.net"
+        password:
+          type: string
+          example: "password"
+    ErrorMessage:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: "Error message"

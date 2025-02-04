@@ -1,8 +1,8 @@
 package api
 
 import (
-	"net/http"
 
+	"log-backend/autogen"
 	"log-backend/internal/models"
 
 	"github.com/labstack/echo/v4"
@@ -17,16 +17,19 @@ func (s Server) GetHealth(ctx echo.Context) error {
 	result := s.db.First(&health)
 	if result.Error != nil {
 		logrus.Errorf("Error getting health: %v", result.Error)
-		return ctx.JSON(http.StatusInternalServerError, result.Error)
+		autogen.GetHealth500JSONResponse{Message: "Error getting health"}.VisitGetHealthResponse(ctx.Response())
+		return result.Error
 	}
 
 	health.Nb += 1
 	result = s.db.Save(&health)
 	if result.Error != nil {
 		logrus.Errorf("Error updating health: %v", result.Error)
-		return ctx.JSON(http.StatusInternalServerError, result.Error)
+		autogen.GetHealth500JSONResponse{Message: "Error updating health"}.VisitGetHealthResponse(ctx.Response())
+		return result.Error
 	}
 
 	logrus.Info("/health: Health check")
-	return ctx.JSON(http.StatusOK, health)
+	autogen.GetHealth200JSONResponse{Status: health.Status, Nb: health.Nb}.VisitGetHealthResponse(ctx.Response())
+	return nil
 }

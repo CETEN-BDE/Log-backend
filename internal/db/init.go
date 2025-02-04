@@ -31,7 +31,7 @@ func InitDB() (*sql.DB, *gorm.DB, error) {
     }
     logrus.Println("Database connection successful")
     // Perform auto migration
-    err = db.AutoMigrate(models.Health{})
+    err = db.AutoMigrate(models.Health{}, models.Account{})
     if err != nil {
         logrus.Printf("auto migrate error: %v", err)
         return nil, nil, errors.New("auto migrate error")

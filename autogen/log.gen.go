@@ -20,17 +20,47 @@ import (
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
 
+const (
+	BDEScopes = "BDE.Scopes"
+)
+
+// ErrorMessage defines model for ErrorMessage.
+type ErrorMessage struct {
+	Message string `json:"message" bson:"message"`
+}
+
 // Health defines model for Health.
 type Health struct {
 	Nb     int    `json:"nb" bson:"nb"`
 	Status string `json:"status" bson:"status"`
 }
 
+// LoginRequest defines model for LoginRequest.
+type LoginRequest struct {
+	Email    string `json:"email" bson:"email"`
+	Password string `json:"password" bson:"password"`
+}
+
+// PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
+type PostLoginJSONRequestBody = LoginRequest
+
+// PostRegisterJSONRequestBody defines body for PostRegister for application/json ContentType.
+type PostRegisterJSONRequestBody = LoginRequest
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
 	// (GET /health)
 	GetHealth(ctx echo.Context) error
+
+	// (POST /login)
+	PostLogin(ctx echo.Context) error
+
+	// (GET /planning)
+	GetPlanning(ctx echo.Context) error
+
+	// (POST /register)
+	PostRegister(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -44,6 +74,35 @@ func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetHealth(ctx)
+	return err
+}
+
+// PostLogin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostLogin(ctx)
+	return err
+}
+
+// GetPlanning converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPlanning(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetPlanning(ctx)
+	return err
+}
+
+// PostRegister converts echo context to params.
+func (w *ServerInterfaceWrapper) PostRegister(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostRegister(ctx)
 	return err
 }
 
@@ -76,6 +135,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/health", wrapper.GetHealth)
+	router.POST(baseURL+"/login", wrapper.PostLogin)
+	router.GET(baseURL+"/planning", wrapper.GetPlanning)
+	router.POST(baseURL+"/register", wrapper.PostRegister)
 
 }
 
@@ -95,11 +157,142 @@ func (response GetHealth200JSONResponse) VisitGetHealthResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetHealth500JSONResponse ErrorMessage
+
+func (response GetHealth500JSONResponse) VisitGetHealthResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostLoginRequestObject struct {
+	Body *PostLoginJSONRequestBody `bson:"body"`
+}
+
+type PostLoginResponseObject interface {
+	VisitPostLoginResponse(w http.ResponseWriter) error
+}
+
+type PostLogin200ResponseHeaders struct {
+	SetCookie string `bson:"set_cookie"`
+}
+
+type PostLogin200Response struct {
+	Headers PostLogin200ResponseHeaders `bson:"headers"`
+}
+
+func (response PostLogin200Response) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Set-Cookie", fmt.Sprint(response.Headers.SetCookie))
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostLogin400JSONResponse ErrorMessage
+
+func (response PostLogin400JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostLogin401JSONResponse ErrorMessage
+
+func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostLogin500JSONResponse ErrorMessage
+
+func (response PostLogin500JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPlanningRequestObject struct {
+}
+
+type GetPlanningResponseObject interface {
+	VisitGetPlanningResponse(w http.ResponseWriter) error
+}
+
+type GetPlanning200JSONResponse struct {
+	Message string `json:"message" bson:"message"`
+}
+
+func (response GetPlanning200JSONResponse) VisitGetPlanningResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRegisterRequestObject struct {
+	Body *PostRegisterJSONRequestBody `bson:"body"`
+}
+
+type PostRegisterResponseObject interface {
+	VisitPostRegisterResponse(w http.ResponseWriter) error
+}
+
+type PostRegister200JSONResponse struct {
+	Message string `json:"message" bson:"message"`
+}
+
+func (response PostRegister200JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRegister400JSONResponse ErrorMessage
+
+func (response PostRegister400JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRegister403JSONResponse ErrorMessage
+
+func (response PostRegister403JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRegister500JSONResponse ErrorMessage
+
+func (response PostRegister500JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
 	// (GET /health)
 	GetHealth(ctx context.Context, request GetHealthRequestObject) (GetHealthResponseObject, error)
+
+	// (POST /login)
+	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
+
+	// (GET /planning)
+	GetPlanning(ctx context.Context, request GetPlanningRequestObject) (GetPlanningResponseObject, error)
+
+	// (POST /register)
+	PostRegister(ctx context.Context, request PostRegisterRequestObject) (PostRegisterResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -137,16 +330,104 @@ func (sh *strictHandler) GetHealth(ctx echo.Context) error {
 	return nil
 }
 
+// PostLogin operation middleware
+func (sh *strictHandler) PostLogin(ctx echo.Context) error {
+	var request PostLoginRequestObject
+
+	var body PostLoginJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostLogin(ctx.Request().Context(), request.(PostLoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostLogin")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostLoginResponseObject); ok {
+		return validResponse.VisitPostLoginResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetPlanning operation middleware
+func (sh *strictHandler) GetPlanning(ctx echo.Context) error {
+	var request GetPlanningRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetPlanning(ctx.Request().Context(), request.(GetPlanningRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetPlanning")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetPlanningResponseObject); ok {
+		return validResponse.VisitGetPlanningResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// PostRegister operation middleware
+func (sh *strictHandler) PostRegister(ctx echo.Context) error {
+	var request PostRegisterRequestObject
+
+	var body PostRegisterJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostRegister(ctx.Request().Context(), request.(PostRegisterRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostRegister")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostRegisterResponseObject); ok {
+		return validResponse.VisitPostRegisterResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/1yRT2/UMBDFv8rqwTGNU3qpfAOBYCUQHLhVPbjeaeKu4zH2LH8U5buj8abLn0s8it94",
-	"3vvNAs9z5kRJKuyC6ieaXSs/kIsyaZULZyoSqP1PD/qln27OkWCvO8ivTLAISWikgrVDFSen+o8OfMRF",
-	"WqWENGJdOxT6dgqFDrB3z22dzri/iPnhibxgVXVIj6zPxuApVWp+3KyqT/uv6HAqERaTSK7WGM6UKp+K",
-	"p57LaLYmMwcx6lKCNGefM6XXX/a7q91HHndv3r5Dh+9UauAEi+t+6AeV62suB1jc9EN/gw7ZydRSmukC",
-	"ayTRQ4k5CZz2B1i8J9lwauCaOdUzzFfDoIfnJJRao8s5Bt9azVNVB89b0eploUdYvDB/1ma2nZltQuN0",
-	"oOpLyHKOcL7Z+Yn8Ue9VUaloRti75S9q1pjI3sWJq9jb4VaDL/9RjTxeeRJK/Q8ux348GKWy3q+/AwAA",
-	"///0Tsr0TQIAAA==",
+	"H4sIAAAAAAAC/8xWYW/bNhD9KwS3j67kNClQqCiwNPFWF20T1BmGIQtQmrpITKijSh6zeYb++3CUY0e1",
+	"0Q5pkPZTFJJ39+7d3fMtpXZN6xCQgiyWMugaGpU+J947/w5CUBXw/613LXgykG6bzQX8o5rWgix6E3F7",
+	"NZK0aPk4kDdYya4bSQ+fovFQyuJ87eJi/dDNr0CT7EbyNShL9XZYnA8i7q1NDRJU4Nk2kKIYhsjc9Vfh",
+	"rMxGHGMXpLeuMvgBPkUItA0MGmXsMOYVKMwao2uwvxBY0K5BhXqRIdA2mpFsVQh/O18OvaxPv4a/R3DH",
+	"zXYSTA7o6A0tZlzoHvph2RjkjzkoD/5X5xtFspBv/jiTo74j2El/u4FRE7UM+9Xx5P7GR0Bw79icj8FL",
+	"x/bWaMCQ+hFVsnk3ZRfR29X7UOS5awGDi15D5nyVr4zyxlDOaMhQ4vykBTw8nYon4q2rBCc4kjfgg3Eo",
+	"C7mXjbMxP2dvqjWykPvZONtP3FOdOM3rdQNXkNqFm0WRcTgtZSF/A1q1OBcxtA5DX4yn4zH/0Q4JMBmq",
+	"trVGJ9P8KjjcjCl//ezhUhbyp3wzx/lqiPNVhMRTCUF701KfQn8jdA36mjN59oBRB7qxI3YvEhyxS7e5",
+	"5cFKE+XCDqpOXaA0e7Lvdwj0ypWLB8M7mOtuOFXkI3S7KzRMaha1hhAuo7ULoSLVgMRwoMzEWQ0iQODu",
+	"EdNjYYLwQNEjlMKgUEI7d21AcNuW4uOb2WQ2m568nx5/zMSfLgoEKAU5YVDbWIKg2oRbG4MixHlg8Ehi",
+	"xU7I/mKualAl+AR5BvTkKFkMadmozNHkbPL+pZrrEvae7h88eyFOFdUv8xfiNVF7gnaxQ3+Yq4NH7Jwp",
+	"3ihrmLU2Jkk+GO89WvDfkcvqvPkXyu85MhsJl8X5RRqg1ipELskX1Ob09s036s3/2ALuhLrvArBNwdrp",
+	"Zwws+9+f84uu58JDZQKB/7KefLh99UNJykMW4VBrF5GE9sAq9KC1WLP3/ed///FmkNcroawHVS5EDD+W",
+	"CqQDf5P0/nx5Z+sp8tw6rWztAhXPx895cVl+thVZV2WaF7Hs0ue80HQX3X8BAAD//7HhQaUZDAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
