@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -58,13 +59,14 @@ func (s Server) PostLogin(ctx echo.Context) error {
 }
 
 func (s Server) PostRegister(ctx echo.Context) error {
-	var req autogen.LoginRequest
+	var req autogen.RegisterRequest
 	err := ctx.Bind(&req)
 	if err != nil {
 		autogen.PostRegister400JSONResponse{Message: "Mal formed request"}.VisitPostRegisterResponse(ctx.Response())
 		return err
 	}
-	result := s.db.Where("email = ?", req.Email).First(&req)
+	var account models.Account
+	result := s.db.Where("email = ?", req.Email).First(&account)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -73,8 +75,12 @@ func (s Server) PostRegister(ctx echo.Context) error {
 		}
 
 		account := models.Account{
+			FirstName: req.FirstName,
+			LastName: req.LastName,
+			Group: req.Group,
+			ClubId: int(req.ClubId),
 			Email:    req.Email,
-			Password: string(hashedPassword),	
+			Password: string(hashedPassword),
 		}
 		result_create := s.db.Create(&account)
 		if result_create.Error != nil {
@@ -87,5 +93,22 @@ func (s Server) PostRegister(ctx echo.Context) error {
 	}
 
 	autogen.PostRegister200JSONResponse{Message: "Register Success"}.VisitPostRegisterResponse(ctx.Response())
+	return nil
+}
+
+func (s Server) GetAccountsClubId(ctx echo.Context, clubId int) error {
+	accountList := []models.Account{}
+	result := s.db.Where("club_id = ?", clubId).Find(&accountList)
+	if result.Error != nil {
+		autogen.GetAccountsClubId500JSONResponse{Message: "Can't access to the DB"}.VisitGetAccountsClubIdResponse(ctx.Response())
+		return result.Error
+	}
+	resp := autogen.GetAccountsClubId200JSONResponse{}
+	for _, account := range accountList {
+		acc := autogen.Account{FirstName: account.FirstName, LastName: account.LastName, Group: &account.Group, UserId: account.ID}
+		resp = append(resp, acc)
+	}
+	logrus.Infof("GET /account/%d: Account Club Id", clubId)
+	resp.VisitGetAccountsClubIdResponse(ctx.Response())
 	return nil
 }

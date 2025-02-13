@@ -69,7 +69,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginRequest"
+              $ref: "#/components/schemas/RegisterRequest"
       security: []
       responses:
         "200":
@@ -102,30 +102,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /permanences:
+  /accounts/{clubId}:
+    parameters:
+      - name: clubId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 1
+        description: "club ID"
     get:
       security:
         - BDE: []
       responses:
         "200":
-          description: "Permanences liste"
+          description: "Get all accounts with clubId"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Permanence"
-  /permanence/{userId}:
+                  $ref: "#/components/schemas/Account"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /planning/{accountID}:
     get:
       security:
         - BDE: []
       parameters:
-        - name: userId
+        - name: accountID
           in: path
           required: true
           schema:
             type: integer
-          description: "User ID"
+            example: 1
+          description: "Account ID"
       responses:
         "200":
           description: "Permanences liste"
@@ -135,66 +156,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Permanence"
-        "400":
-          description: "Invalid input"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
-        "500":
-          description: "Error 500"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
-  /permanence/{date}:
-    get:
-      security:
-        - BDE: []
-      parameters:
-        - name: date
-          in: path
-          required: true
-          schema:
-            type: string
-            format: date
-          description: "Date"
-      responses:
-        "200":
-          description: "Permanence"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Permanence"
-        "400":
-          description: "Invalid input"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
-        "500":
-          description: "Error 500"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
-  /permanence:
-    post:
-      security:
-        - BDE: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Permanence"
-      responses:
-        "200":
-          description: "Permanence created"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
         "400":
           description: "Invalid input"
           content:
@@ -210,6 +171,14 @@ paths:
     patch:
       security:
         - BDE: []
+      parameters:
+        - name: accountID
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: "Account ID"
       requestBody:
         required: true
         content:
@@ -218,7 +187,7 @@ paths:
               $ref: "#/components/schemas/Permanence"
       responses:
         "200":
-          description: "Permanence updated"
+          description: "Message"
           content:
             application/json:
               schema:
@@ -235,7 +204,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /documents/noteDeFrais:
+  /docs/noteDeFrais:
     post:
       security: []
       requestBody:
@@ -251,7 +220,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-                
+
         "400":
           description: "Invalid input"
           content:
@@ -264,7 +233,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /documents/locationPerso:
+  /docs/locationPerso:
     get:
       security:
         - BDE: []
@@ -304,7 +273,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /documents/locationAsso:
+  /docs/locationAsso:
     get:
       security:
         - BDE: []
@@ -368,7 +337,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /documents/locationPerso/{id}:
+  /docs/locationPerso/{id}:
     get:
       security:
         - BDE: []
@@ -439,7 +408,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /documents/locationAsso/{id}:
+  /docs/locationAsso/{id}:
     get:
       security:
         - BDE: []
@@ -488,6 +457,77 @@ paths:
       responses:
         "200":
           description: "Location deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /docs/materiel/{id}:
+    get:
+      security:
+        - BDE: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: "Materiel ID"
+      responses:
+        "200":
+          description: "Materiel"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Materiel"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "403":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+    delete:
+      security:
+        - BDE: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: "Materiel ID"
+      responses:
+        "200":
+          description: "Materiel deleted"
           content:
             application/json:
               schema:
@@ -552,6 +592,35 @@ components:
         password:
           type: string
           example: "password"
+    RegisterRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - group
+        - clubId
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+          example: jean
+        lastName:
+          type: string
+          example: michel
+        group:
+          type: string
+          example: ISS
+        clubId:
+          type: integer
+          format: uint
+          example: 1
+        email:
+          type: string
+          example: "jean.michel2@telecomnancy.net"
+        password:
+          type: string
+          example: "password"
     Message:
       type: object
       required:
@@ -560,20 +629,39 @@ components:
         message:
           type: string
           example: "Error message"
-    Permanence:
+    Account:
       type: object
+      required:
+        - userId
+        - FirstName
+        - LastName
       properties:
         userId:
           type: integer
+          format: uint
           example: 1
+        FirstName:
+          type: string
+          example: Baptiste
+        LastName:
+          type: string
+          example: J
+        Group:
+          type: string
+          example: ISS
+    Permanence:
+      type: object
+      required:
+        - date
+        - status
+      properties:
         date:
           type: string
           format: date
           example: "2021-03-01"
-    Permanences:
-      type: array
-      items:
-        $ref: "#/components/schemas/Permanence"
+        status:
+          type: string
+          enum: ["available", "unavailable", "selected"]
     NoteDeFrais:
       type: object
       properties:
@@ -616,3 +704,16 @@ components:
         description:
           type: string
           example: "Location description"
+    Materiel:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        date:
+          type: string
+          format: date
+          example: "2021-03-01"
+        description:
+          type: string
+          example: "Materiel description"

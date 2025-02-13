@@ -17,16 +17,28 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 const (
 	BDEScopes = "BDE.Scopes"
 )
 
-// ErrorMessage defines model for ErrorMessage.
-type ErrorMessage struct {
-	Message string `json:"message" bson:"message"`
+// Defines values for PermanenceStatus.
+const (
+	Available   PermanenceStatus = "available"
+	Selected    PermanenceStatus = "selected"
+	Unavailable PermanenceStatus = "unavailable"
+)
+
+// Account defines model for Account.
+type Account struct {
+	FirstName string  `json:"FirstName" bson:"first_name"`
+	Group     *string `json:"Group,omitempty" bson:"group"`
+	LastName  string  `json:"LastName" bson:"last_name"`
+	UserId    uint    `json:"userId" bson:"user_id"`
 }
 
 // Health defines model for Health.
@@ -35,20 +47,121 @@ type Health struct {
 	Status string `json:"status" bson:"status"`
 }
 
+// LocationAsso defines model for LocationAsso.
+type LocationAsso struct {
+	Date        *openapi_types.Date `json:"date,omitempty" bson:"date"`
+	Description *string             `json:"description,omitempty" bson:"description"`
+	Id          *int                `json:"id,omitempty" bson:"id"`
+}
+
+// LocationPerso defines model for LocationPerso.
+type LocationPerso struct {
+	Date        *openapi_types.Date `json:"date,omitempty" bson:"date"`
+	Description *string             `json:"description,omitempty" bson:"description"`
+	Id          *int                `json:"id,omitempty" bson:"id"`
+}
+
 // LoginRequest defines model for LoginRequest.
 type LoginRequest struct {
 	Email    string `json:"email" bson:"email"`
 	Password string `json:"password" bson:"password"`
 }
 
+// Materiel defines model for Materiel.
+type Materiel struct {
+	Date        *openapi_types.Date `json:"date,omitempty" bson:"date"`
+	Description *string             `json:"description,omitempty" bson:"description"`
+	Id          *int                `json:"id,omitempty" bson:"id"`
+}
+
+// Message defines model for Message.
+type Message struct {
+	Message string `json:"message" bson:"message"`
+}
+
+// NoteDeFrais defines model for NoteDeFrais.
+type NoteDeFrais struct {
+	Amount      *float32            `json:"amount,omitempty" bson:"amount"`
+	Date        *openapi_types.Date `json:"date,omitempty" bson:"date"`
+	Description *string             `json:"description,omitempty" bson:"description"`
+	UserId      *int                `json:"userId,omitempty" bson:"user_id"`
+}
+
+// Permanence defines model for Permanence.
+type Permanence struct {
+	Date   openapi_types.Date `json:"date" bson:"date"`
+	Status PermanenceStatus   `json:"status" bson:"status"`
+}
+
+// PermanenceStatus defines model for Permanence.Status.
+type PermanenceStatus string
+
+// RegisterRequest defines model for RegisterRequest.
+type RegisterRequest struct {
+	ClubId    uint   `json:"clubId" bson:"club_id"`
+	Email     string `json:"email" bson:"email"`
+	FirstName string `json:"firstName" bson:"first_name"`
+	Group     string `json:"group" bson:"group"`
+	LastName  string `json:"lastName" bson:"last_name"`
+	Password  string `json:"password" bson:"password"`
+}
+
+// PostDocsLocationAssoJSONRequestBody defines body for PostDocsLocationAsso for application/json ContentType.
+type PostDocsLocationAssoJSONRequestBody = LocationAsso
+
+// PostDocsLocationPersoJSONRequestBody defines body for PostDocsLocationPerso for application/json ContentType.
+type PostDocsLocationPersoJSONRequestBody = LocationPerso
+
+// PostDocsNoteDeFraisJSONRequestBody defines body for PostDocsNoteDeFrais for application/json ContentType.
+type PostDocsNoteDeFraisJSONRequestBody = NoteDeFrais
+
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody = LoginRequest
 
+// PatchPlanningAccountIDJSONRequestBody defines body for PatchPlanningAccountID for application/json ContentType.
+type PatchPlanningAccountIDJSONRequestBody = Permanence
+
 // PostRegisterJSONRequestBody defines body for PostRegister for application/json ContentType.
-type PostRegisterJSONRequestBody = LoginRequest
+type PostRegisterJSONRequestBody = RegisterRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (GET /accounts/{clubId})
+	GetAccountsClubId(ctx echo.Context, clubId int) error
+
+	// (GET /docs/locationAsso)
+	GetDocsLocationAsso(ctx echo.Context) error
+
+	// (POST /docs/locationAsso)
+	PostDocsLocationAsso(ctx echo.Context) error
+
+	// (DELETE /docs/locationAsso/{id})
+	DeleteDocsLocationAssoId(ctx echo.Context, id int) error
+
+	// (GET /docs/locationAsso/{id})
+	GetDocsLocationAssoId(ctx echo.Context, id int) error
+
+	// (GET /docs/locationPerso)
+	GetDocsLocationPerso(ctx echo.Context) error
+
+	// (POST /docs/locationPerso)
+	PostDocsLocationPerso(ctx echo.Context) error
+
+	// (DELETE /docs/locationPerso/{id})
+	DeleteDocsLocationPersoId(ctx echo.Context, id int) error
+
+	// (GET /docs/locationPerso/{id})
+	GetDocsLocationPersoId(ctx echo.Context, id int) error
+
+	// (DELETE /docs/materiel/{id})
+	DeleteDocsMaterielId(ctx echo.Context, id int) error
+
+	// (GET /docs/materiel/{id})
+	GetDocsMaterielId(ctx echo.Context, id int) error
+
+	// (POST /docs/noteDeFrais)
+	PostDocsNoteDeFrais(ctx echo.Context) error
 
 	// (GET /health)
 	GetHealth(ctx echo.Context) error
@@ -56,8 +169,11 @@ type ServerInterface interface {
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
 
-	// (GET /planning)
-	GetPlanning(ctx echo.Context) error
+	// (GET /planning/{accountID})
+	GetPlanningAccountID(ctx echo.Context, accountID int) error
+
+	// (PATCH /planning/{accountID})
+	PatchPlanningAccountID(ctx echo.Context, accountID int) error
 
 	// (POST /register)
 	PostRegister(ctx echo.Context) error
@@ -66,6 +182,181 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface `bson:"handler"`
+}
+
+// GetAccountsClubId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAccountsClubId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "clubId" -------------
+	var clubId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "clubId", ctx.Param("clubId"), &clubId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter clubId: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAccountsClubId(ctx, clubId)
+	return err
+}
+
+// GetDocsLocationAsso converts echo context to params.
+func (w *ServerInterfaceWrapper) GetDocsLocationAsso(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetDocsLocationAsso(ctx)
+	return err
+}
+
+// PostDocsLocationAsso converts echo context to params.
+func (w *ServerInterfaceWrapper) PostDocsLocationAsso(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostDocsLocationAsso(ctx)
+	return err
+}
+
+// DeleteDocsLocationAssoId converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteDocsLocationAssoId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteDocsLocationAssoId(ctx, id)
+	return err
+}
+
+// GetDocsLocationAssoId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetDocsLocationAssoId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetDocsLocationAssoId(ctx, id)
+	return err
+}
+
+// GetDocsLocationPerso converts echo context to params.
+func (w *ServerInterfaceWrapper) GetDocsLocationPerso(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetDocsLocationPerso(ctx)
+	return err
+}
+
+// PostDocsLocationPerso converts echo context to params.
+func (w *ServerInterfaceWrapper) PostDocsLocationPerso(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostDocsLocationPerso(ctx)
+	return err
+}
+
+// DeleteDocsLocationPersoId converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteDocsLocationPersoId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteDocsLocationPersoId(ctx, id)
+	return err
+}
+
+// GetDocsLocationPersoId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetDocsLocationPersoId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetDocsLocationPersoId(ctx, id)
+	return err
+}
+
+// DeleteDocsMaterielId converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteDocsMaterielId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteDocsMaterielId(ctx, id)
+	return err
+}
+
+// GetDocsMaterielId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetDocsMaterielId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetDocsMaterielId(ctx, id)
+	return err
+}
+
+// PostDocsNoteDeFrais converts echo context to params.
+func (w *ServerInterfaceWrapper) PostDocsNoteDeFrais(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostDocsNoteDeFrais(ctx)
+	return err
 }
 
 // GetHealth converts echo context to params.
@@ -86,14 +377,39 @@ func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	return err
 }
 
-// GetPlanning converts echo context to params.
-func (w *ServerInterfaceWrapper) GetPlanning(ctx echo.Context) error {
+// GetPlanningAccountID converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPlanningAccountID(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "accountID" -------------
+	var accountID int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "accountID", ctx.Param("accountID"), &accountID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
+	}
 
 	ctx.Set(BDEScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetPlanning(ctx)
+	err = w.Handler.GetPlanningAccountID(ctx, accountID)
+	return err
+}
+
+// PatchPlanningAccountID converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchPlanningAccountID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "accountID" -------------
+	var accountID int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "accountID", ctx.Param("accountID"), &accountID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchPlanningAccountID(ctx, accountID)
 	return err
 }
 
@@ -134,11 +450,496 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.GET(baseURL+"/accounts/:clubId", wrapper.GetAccountsClubId)
+	router.GET(baseURL+"/docs/locationAsso", wrapper.GetDocsLocationAsso)
+	router.POST(baseURL+"/docs/locationAsso", wrapper.PostDocsLocationAsso)
+	router.DELETE(baseURL+"/docs/locationAsso/:id", wrapper.DeleteDocsLocationAssoId)
+	router.GET(baseURL+"/docs/locationAsso/:id", wrapper.GetDocsLocationAssoId)
+	router.GET(baseURL+"/docs/locationPerso", wrapper.GetDocsLocationPerso)
+	router.POST(baseURL+"/docs/locationPerso", wrapper.PostDocsLocationPerso)
+	router.DELETE(baseURL+"/docs/locationPerso/:id", wrapper.DeleteDocsLocationPersoId)
+	router.GET(baseURL+"/docs/locationPerso/:id", wrapper.GetDocsLocationPersoId)
+	router.DELETE(baseURL+"/docs/materiel/:id", wrapper.DeleteDocsMaterielId)
+	router.GET(baseURL+"/docs/materiel/:id", wrapper.GetDocsMaterielId)
+	router.POST(baseURL+"/docs/noteDeFrais", wrapper.PostDocsNoteDeFrais)
 	router.GET(baseURL+"/health", wrapper.GetHealth)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
-	router.GET(baseURL+"/planning", wrapper.GetPlanning)
+	router.GET(baseURL+"/planning/:accountID", wrapper.GetPlanningAccountID)
+	router.PATCH(baseURL+"/planning/:accountID", wrapper.PatchPlanningAccountID)
 	router.POST(baseURL+"/register", wrapper.PostRegister)
 
+}
+
+type GetAccountsClubIdRequestObject struct {
+	ClubId int `json:"clubId" bson:"club_id"`
+}
+
+type GetAccountsClubIdResponseObject interface {
+	VisitGetAccountsClubIdResponse(w http.ResponseWriter) error
+}
+
+type GetAccountsClubId200JSONResponse []Account
+
+func (response GetAccountsClubId200JSONResponse) VisitGetAccountsClubIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAccountsClubId400JSONResponse Message
+
+func (response GetAccountsClubId400JSONResponse) VisitGetAccountsClubIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAccountsClubId500JSONResponse Message
+
+func (response GetAccountsClubId500JSONResponse) VisitGetAccountsClubIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAssoRequestObject struct {
+}
+
+type GetDocsLocationAssoResponseObject interface {
+	VisitGetDocsLocationAssoResponse(w http.ResponseWriter) error
+}
+
+type GetDocsLocationAsso200JSONResponse []LocationAsso
+
+func (response GetDocsLocationAsso200JSONResponse) VisitGetDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAsso400JSONResponse Message
+
+func (response GetDocsLocationAsso400JSONResponse) VisitGetDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAsso403JSONResponse Message
+
+func (response GetDocsLocationAsso403JSONResponse) VisitGetDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAsso500JSONResponse Message
+
+func (response GetDocsLocationAsso500JSONResponse) VisitGetDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsLocationAssoRequestObject struct {
+	Body *PostDocsLocationAssoJSONRequestBody `bson:"body"`
+}
+
+type PostDocsLocationAssoResponseObject interface {
+	VisitPostDocsLocationAssoResponse(w http.ResponseWriter) error
+}
+
+type PostDocsLocationAsso200JSONResponse LocationAsso
+
+func (response PostDocsLocationAsso200JSONResponse) VisitPostDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsLocationAsso400JSONResponse Message
+
+func (response PostDocsLocationAsso400JSONResponse) VisitPostDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsLocationAsso403JSONResponse Message
+
+func (response PostDocsLocationAsso403JSONResponse) VisitPostDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsLocationAsso500JSONResponse Message
+
+func (response PostDocsLocationAsso500JSONResponse) VisitPostDocsLocationAssoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationAssoIdRequestObject struct {
+	Id int `json:"id" bson:"id"`
+}
+
+type DeleteDocsLocationAssoIdResponseObject interface {
+	VisitDeleteDocsLocationAssoIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteDocsLocationAssoId200JSONResponse Message
+
+func (response DeleteDocsLocationAssoId200JSONResponse) VisitDeleteDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationAssoId400JSONResponse Message
+
+func (response DeleteDocsLocationAssoId400JSONResponse) VisitDeleteDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationAssoId403JSONResponse Message
+
+func (response DeleteDocsLocationAssoId403JSONResponse) VisitDeleteDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationAssoId500JSONResponse Message
+
+func (response DeleteDocsLocationAssoId500JSONResponse) VisitDeleteDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAssoIdRequestObject struct {
+	Id int `json:"id" bson:"id"`
+}
+
+type GetDocsLocationAssoIdResponseObject interface {
+	VisitGetDocsLocationAssoIdResponse(w http.ResponseWriter) error
+}
+
+type GetDocsLocationAssoId200JSONResponse LocationAsso
+
+func (response GetDocsLocationAssoId200JSONResponse) VisitGetDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAssoId400JSONResponse Message
+
+func (response GetDocsLocationAssoId400JSONResponse) VisitGetDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAssoId403JSONResponse Message
+
+func (response GetDocsLocationAssoId403JSONResponse) VisitGetDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationAssoId500JSONResponse Message
+
+func (response GetDocsLocationAssoId500JSONResponse) VisitGetDocsLocationAssoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationPersoRequestObject struct {
+}
+
+type GetDocsLocationPersoResponseObject interface {
+	VisitGetDocsLocationPersoResponse(w http.ResponseWriter) error
+}
+
+type GetDocsLocationPerso200JSONResponse []LocationPerso
+
+func (response GetDocsLocationPerso200JSONResponse) VisitGetDocsLocationPersoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsLocationPersoRequestObject struct {
+	Body *PostDocsLocationPersoJSONRequestBody `bson:"body"`
+}
+
+type PostDocsLocationPersoResponseObject interface {
+	VisitPostDocsLocationPersoResponse(w http.ResponseWriter) error
+}
+
+type PostDocsLocationPerso200JSONResponse LocationPerso
+
+func (response PostDocsLocationPerso200JSONResponse) VisitPostDocsLocationPersoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsLocationPerso400JSONResponse Message
+
+func (response PostDocsLocationPerso400JSONResponse) VisitPostDocsLocationPersoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsLocationPerso500JSONResponse Message
+
+func (response PostDocsLocationPerso500JSONResponse) VisitPostDocsLocationPersoResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationPersoIdRequestObject struct {
+	Id int `json:"id" bson:"id"`
+}
+
+type DeleteDocsLocationPersoIdResponseObject interface {
+	VisitDeleteDocsLocationPersoIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteDocsLocationPersoId200JSONResponse Message
+
+func (response DeleteDocsLocationPersoId200JSONResponse) VisitDeleteDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationPersoId400JSONResponse Message
+
+func (response DeleteDocsLocationPersoId400JSONResponse) VisitDeleteDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationPersoId403JSONResponse Message
+
+func (response DeleteDocsLocationPersoId403JSONResponse) VisitDeleteDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsLocationPersoId500JSONResponse Message
+
+func (response DeleteDocsLocationPersoId500JSONResponse) VisitDeleteDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationPersoIdRequestObject struct {
+	Id int `json:"id" bson:"id"`
+}
+
+type GetDocsLocationPersoIdResponseObject interface {
+	VisitGetDocsLocationPersoIdResponse(w http.ResponseWriter) error
+}
+
+type GetDocsLocationPersoId200JSONResponse LocationPerso
+
+func (response GetDocsLocationPersoId200JSONResponse) VisitGetDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationPersoId400JSONResponse Message
+
+func (response GetDocsLocationPersoId400JSONResponse) VisitGetDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationPersoId403JSONResponse Message
+
+func (response GetDocsLocationPersoId403JSONResponse) VisitGetDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsLocationPersoId500JSONResponse Message
+
+func (response GetDocsLocationPersoId500JSONResponse) VisitGetDocsLocationPersoIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsMaterielIdRequestObject struct {
+	Id int `json:"id" bson:"id"`
+}
+
+type DeleteDocsMaterielIdResponseObject interface {
+	VisitDeleteDocsMaterielIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteDocsMaterielId200JSONResponse Message
+
+func (response DeleteDocsMaterielId200JSONResponse) VisitDeleteDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsMaterielId400JSONResponse Message
+
+func (response DeleteDocsMaterielId400JSONResponse) VisitDeleteDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsMaterielId403JSONResponse Message
+
+func (response DeleteDocsMaterielId403JSONResponse) VisitDeleteDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteDocsMaterielId500JSONResponse Message
+
+func (response DeleteDocsMaterielId500JSONResponse) VisitDeleteDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsMaterielIdRequestObject struct {
+	Id int `json:"id" bson:"id"`
+}
+
+type GetDocsMaterielIdResponseObject interface {
+	VisitGetDocsMaterielIdResponse(w http.ResponseWriter) error
+}
+
+type GetDocsMaterielId200JSONResponse Materiel
+
+func (response GetDocsMaterielId200JSONResponse) VisitGetDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsMaterielId400JSONResponse Message
+
+func (response GetDocsMaterielId400JSONResponse) VisitGetDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsMaterielId403JSONResponse Message
+
+func (response GetDocsMaterielId403JSONResponse) VisitGetDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDocsMaterielId500JSONResponse Message
+
+func (response GetDocsMaterielId500JSONResponse) VisitGetDocsMaterielIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsNoteDeFraisRequestObject struct {
+	Body *PostDocsNoteDeFraisJSONRequestBody `bson:"body"`
+}
+
+type PostDocsNoteDeFraisResponseObject interface {
+	VisitPostDocsNoteDeFraisResponse(w http.ResponseWriter) error
+}
+
+type PostDocsNoteDeFrais200JSONResponse Message
+
+func (response PostDocsNoteDeFrais200JSONResponse) VisitPostDocsNoteDeFraisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsNoteDeFrais400JSONResponse Message
+
+func (response PostDocsNoteDeFrais400JSONResponse) VisitPostDocsNoteDeFraisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostDocsNoteDeFrais500JSONResponse Message
+
+func (response PostDocsNoteDeFrais500JSONResponse) VisitPostDocsNoteDeFraisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetHealthRequestObject struct {
@@ -157,7 +958,7 @@ func (response GetHealth200JSONResponse) VisitGetHealthResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetHealth500JSONResponse ErrorMessage
+type GetHealth500JSONResponse Message
 
 func (response GetHealth500JSONResponse) VisitGetHealthResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -188,7 +989,7 @@ func (response PostLogin200Response) VisitPostLoginResponse(w http.ResponseWrite
 	return nil
 }
 
-type PostLogin400JSONResponse ErrorMessage
+type PostLogin400JSONResponse Message
 
 func (response PostLogin400JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -197,7 +998,7 @@ func (response PostLogin400JSONResponse) VisitPostLoginResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostLogin401JSONResponse ErrorMessage
+type PostLogin401JSONResponse Message
 
 func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -206,7 +1007,7 @@ func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostLogin500JSONResponse ErrorMessage
+type PostLogin500JSONResponse Message
 
 func (response PostLogin500JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -215,20 +1016,73 @@ func (response PostLogin500JSONResponse) VisitPostLoginResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetPlanningRequestObject struct {
+type GetPlanningAccountIDRequestObject struct {
+	AccountID int `json:"accountID" bson:"account_id"`
 }
 
-type GetPlanningResponseObject interface {
-	VisitGetPlanningResponse(w http.ResponseWriter) error
+type GetPlanningAccountIDResponseObject interface {
+	VisitGetPlanningAccountIDResponse(w http.ResponseWriter) error
 }
 
-type GetPlanning200JSONResponse struct {
-	Message string `json:"message" bson:"message"`
-}
+type GetPlanningAccountID200JSONResponse []Permanence
 
-func (response GetPlanning200JSONResponse) VisitGetPlanningResponse(w http.ResponseWriter) error {
+func (response GetPlanningAccountID200JSONResponse) VisitGetPlanningAccountIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPlanningAccountID400JSONResponse Message
+
+func (response GetPlanningAccountID400JSONResponse) VisitGetPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPlanningAccountID500JSONResponse Message
+
+func (response GetPlanningAccountID500JSONResponse) VisitGetPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchPlanningAccountIDRequestObject struct {
+	AccountID int                                    `json:"accountID" bson:"account_id"`
+	Body      *PatchPlanningAccountIDJSONRequestBody `bson:"body"`
+}
+
+type PatchPlanningAccountIDResponseObject interface {
+	VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error
+}
+
+type PatchPlanningAccountID200JSONResponse Message
+
+func (response PatchPlanningAccountID200JSONResponse) VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchPlanningAccountID400JSONResponse Message
+
+func (response PatchPlanningAccountID400JSONResponse) VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchPlanningAccountID500JSONResponse Message
+
+func (response PatchPlanningAccountID500JSONResponse) VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -252,7 +1106,7 @@ func (response PostRegister200JSONResponse) VisitPostRegisterResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostRegister400JSONResponse ErrorMessage
+type PostRegister400JSONResponse Message
 
 func (response PostRegister400JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -261,7 +1115,7 @@ func (response PostRegister400JSONResponse) VisitPostRegisterResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostRegister403JSONResponse ErrorMessage
+type PostRegister403JSONResponse Message
 
 func (response PostRegister403JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -270,7 +1124,7 @@ func (response PostRegister403JSONResponse) VisitPostRegisterResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostRegister500JSONResponse ErrorMessage
+type PostRegister500JSONResponse Message
 
 func (response PostRegister500JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -282,14 +1136,53 @@ func (response PostRegister500JSONResponse) VisitPostRegisterResponse(w http.Res
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
+	// (GET /accounts/{clubId})
+	GetAccountsClubId(ctx context.Context, request GetAccountsClubIdRequestObject) (GetAccountsClubIdResponseObject, error)
+
+	// (GET /docs/locationAsso)
+	GetDocsLocationAsso(ctx context.Context, request GetDocsLocationAssoRequestObject) (GetDocsLocationAssoResponseObject, error)
+
+	// (POST /docs/locationAsso)
+	PostDocsLocationAsso(ctx context.Context, request PostDocsLocationAssoRequestObject) (PostDocsLocationAssoResponseObject, error)
+
+	// (DELETE /docs/locationAsso/{id})
+	DeleteDocsLocationAssoId(ctx context.Context, request DeleteDocsLocationAssoIdRequestObject) (DeleteDocsLocationAssoIdResponseObject, error)
+
+	// (GET /docs/locationAsso/{id})
+	GetDocsLocationAssoId(ctx context.Context, request GetDocsLocationAssoIdRequestObject) (GetDocsLocationAssoIdResponseObject, error)
+
+	// (GET /docs/locationPerso)
+	GetDocsLocationPerso(ctx context.Context, request GetDocsLocationPersoRequestObject) (GetDocsLocationPersoResponseObject, error)
+
+	// (POST /docs/locationPerso)
+	PostDocsLocationPerso(ctx context.Context, request PostDocsLocationPersoRequestObject) (PostDocsLocationPersoResponseObject, error)
+
+	// (DELETE /docs/locationPerso/{id})
+	DeleteDocsLocationPersoId(ctx context.Context, request DeleteDocsLocationPersoIdRequestObject) (DeleteDocsLocationPersoIdResponseObject, error)
+
+	// (GET /docs/locationPerso/{id})
+	GetDocsLocationPersoId(ctx context.Context, request GetDocsLocationPersoIdRequestObject) (GetDocsLocationPersoIdResponseObject, error)
+
+	// (DELETE /docs/materiel/{id})
+	DeleteDocsMaterielId(ctx context.Context, request DeleteDocsMaterielIdRequestObject) (DeleteDocsMaterielIdResponseObject, error)
+
+	// (GET /docs/materiel/{id})
+	GetDocsMaterielId(ctx context.Context, request GetDocsMaterielIdRequestObject) (GetDocsMaterielIdResponseObject, error)
+
+	// (POST /docs/noteDeFrais)
+	PostDocsNoteDeFrais(ctx context.Context, request PostDocsNoteDeFraisRequestObject) (PostDocsNoteDeFraisResponseObject, error)
+
 	// (GET /health)
 	GetHealth(ctx context.Context, request GetHealthRequestObject) (GetHealthResponseObject, error)
 
 	// (POST /login)
 	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
 
-	// (GET /planning)
-	GetPlanning(ctx context.Context, request GetPlanningRequestObject) (GetPlanningResponseObject, error)
+	// (GET /planning/{accountID})
+	GetPlanningAccountID(ctx context.Context, request GetPlanningAccountIDRequestObject) (GetPlanningAccountIDResponseObject, error)
+
+	// (PATCH /planning/{accountID})
+	PatchPlanningAccountID(ctx context.Context, request PatchPlanningAccountIDRequestObject) (PatchPlanningAccountIDResponseObject, error)
 
 	// (POST /register)
 	PostRegister(ctx context.Context, request PostRegisterRequestObject) (PostRegisterResponseObject, error)
@@ -305,6 +1198,314 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface  `bson:"ssi"`
 	middlewares []StrictMiddlewareFunc `bson:"middlewares"`
+}
+
+// GetAccountsClubId operation middleware
+func (sh *strictHandler) GetAccountsClubId(ctx echo.Context, clubId int) error {
+	var request GetAccountsClubIdRequestObject
+
+	request.ClubId = clubId
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAccountsClubId(ctx.Request().Context(), request.(GetAccountsClubIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAccountsClubId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetAccountsClubIdResponseObject); ok {
+		return validResponse.VisitGetAccountsClubIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetDocsLocationAsso operation middleware
+func (sh *strictHandler) GetDocsLocationAsso(ctx echo.Context) error {
+	var request GetDocsLocationAssoRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDocsLocationAsso(ctx.Request().Context(), request.(GetDocsLocationAssoRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDocsLocationAsso")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetDocsLocationAssoResponseObject); ok {
+		return validResponse.VisitGetDocsLocationAssoResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// PostDocsLocationAsso operation middleware
+func (sh *strictHandler) PostDocsLocationAsso(ctx echo.Context) error {
+	var request PostDocsLocationAssoRequestObject
+
+	var body PostDocsLocationAssoJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostDocsLocationAsso(ctx.Request().Context(), request.(PostDocsLocationAssoRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostDocsLocationAsso")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostDocsLocationAssoResponseObject); ok {
+		return validResponse.VisitPostDocsLocationAssoResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// DeleteDocsLocationAssoId operation middleware
+func (sh *strictHandler) DeleteDocsLocationAssoId(ctx echo.Context, id int) error {
+	var request DeleteDocsLocationAssoIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteDocsLocationAssoId(ctx.Request().Context(), request.(DeleteDocsLocationAssoIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteDocsLocationAssoId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteDocsLocationAssoIdResponseObject); ok {
+		return validResponse.VisitDeleteDocsLocationAssoIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetDocsLocationAssoId operation middleware
+func (sh *strictHandler) GetDocsLocationAssoId(ctx echo.Context, id int) error {
+	var request GetDocsLocationAssoIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDocsLocationAssoId(ctx.Request().Context(), request.(GetDocsLocationAssoIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDocsLocationAssoId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetDocsLocationAssoIdResponseObject); ok {
+		return validResponse.VisitGetDocsLocationAssoIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetDocsLocationPerso operation middleware
+func (sh *strictHandler) GetDocsLocationPerso(ctx echo.Context) error {
+	var request GetDocsLocationPersoRequestObject
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDocsLocationPerso(ctx.Request().Context(), request.(GetDocsLocationPersoRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDocsLocationPerso")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetDocsLocationPersoResponseObject); ok {
+		return validResponse.VisitGetDocsLocationPersoResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// PostDocsLocationPerso operation middleware
+func (sh *strictHandler) PostDocsLocationPerso(ctx echo.Context) error {
+	var request PostDocsLocationPersoRequestObject
+
+	var body PostDocsLocationPersoJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostDocsLocationPerso(ctx.Request().Context(), request.(PostDocsLocationPersoRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostDocsLocationPerso")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostDocsLocationPersoResponseObject); ok {
+		return validResponse.VisitPostDocsLocationPersoResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// DeleteDocsLocationPersoId operation middleware
+func (sh *strictHandler) DeleteDocsLocationPersoId(ctx echo.Context, id int) error {
+	var request DeleteDocsLocationPersoIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteDocsLocationPersoId(ctx.Request().Context(), request.(DeleteDocsLocationPersoIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteDocsLocationPersoId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteDocsLocationPersoIdResponseObject); ok {
+		return validResponse.VisitDeleteDocsLocationPersoIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetDocsLocationPersoId operation middleware
+func (sh *strictHandler) GetDocsLocationPersoId(ctx echo.Context, id int) error {
+	var request GetDocsLocationPersoIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDocsLocationPersoId(ctx.Request().Context(), request.(GetDocsLocationPersoIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDocsLocationPersoId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetDocsLocationPersoIdResponseObject); ok {
+		return validResponse.VisitGetDocsLocationPersoIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// DeleteDocsMaterielId operation middleware
+func (sh *strictHandler) DeleteDocsMaterielId(ctx echo.Context, id int) error {
+	var request DeleteDocsMaterielIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteDocsMaterielId(ctx.Request().Context(), request.(DeleteDocsMaterielIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteDocsMaterielId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteDocsMaterielIdResponseObject); ok {
+		return validResponse.VisitDeleteDocsMaterielIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// GetDocsMaterielId operation middleware
+func (sh *strictHandler) GetDocsMaterielId(ctx echo.Context, id int) error {
+	var request GetDocsMaterielIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDocsMaterielId(ctx.Request().Context(), request.(GetDocsMaterielIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDocsMaterielId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetDocsMaterielIdResponseObject); ok {
+		return validResponse.VisitGetDocsMaterielIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// PostDocsNoteDeFrais operation middleware
+func (sh *strictHandler) PostDocsNoteDeFrais(ctx echo.Context) error {
+	var request PostDocsNoteDeFraisRequestObject
+
+	var body PostDocsNoteDeFraisJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostDocsNoteDeFrais(ctx.Request().Context(), request.(PostDocsNoteDeFraisRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostDocsNoteDeFrais")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostDocsNoteDeFraisResponseObject); ok {
+		return validResponse.VisitPostDocsNoteDeFraisResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
 }
 
 // GetHealth operation middleware
@@ -359,23 +1560,56 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 	return nil
 }
 
-// GetPlanning operation middleware
-func (sh *strictHandler) GetPlanning(ctx echo.Context) error {
-	var request GetPlanningRequestObject
+// GetPlanningAccountID operation middleware
+func (sh *strictHandler) GetPlanningAccountID(ctx echo.Context, accountID int) error {
+	var request GetPlanningAccountIDRequestObject
+
+	request.AccountID = accountID
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetPlanning(ctx.Request().Context(), request.(GetPlanningRequestObject))
+		return sh.ssi.GetPlanningAccountID(ctx.Request().Context(), request.(GetPlanningAccountIDRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetPlanning")
+		handler = middleware(handler, "GetPlanningAccountID")
 	}
 
 	response, err := handler(ctx, request)
 
 	if err != nil {
 		return err
-	} else if validResponse, ok := response.(GetPlanningResponseObject); ok {
-		return validResponse.VisitGetPlanningResponse(ctx.Response())
+	} else if validResponse, ok := response.(GetPlanningAccountIDResponseObject); ok {
+		return validResponse.VisitGetPlanningAccountIDResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// PatchPlanningAccountID operation middleware
+func (sh *strictHandler) PatchPlanningAccountID(ctx echo.Context, accountID int) error {
+	var request PatchPlanningAccountIDRequestObject
+
+	request.AccountID = accountID
+
+	var body PatchPlanningAccountIDJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PatchPlanningAccountID(ctx.Request().Context(), request.(PatchPlanningAccountIDRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PatchPlanningAccountID")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PatchPlanningAccountIDResponseObject); ok {
+		return validResponse.VisitPatchPlanningAccountIDResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -414,20 +1648,32 @@ func (sh *strictHandler) PostRegister(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
