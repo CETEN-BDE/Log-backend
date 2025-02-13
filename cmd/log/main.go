@@ -4,6 +4,7 @@ import (
 	"log-backend/api"
 	"log-backend/autogen"
 	"log-backend/internal/db"
+	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -32,5 +33,5 @@ func main() {
 	autogen.RegisterHandlers(e, server)
 
 	// And we serve HTTP until the world ends.
-	logrus.Fatal(e.Start("0.0.0.0:8080"))
+	logrus.Fatal(e.Start("0.0.0.0:" + os.Getenv("PORT")))
 }
