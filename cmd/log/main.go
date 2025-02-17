@@ -35,7 +35,7 @@ func main() {
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:5173", "https://log.ceten.fr"}, // Remplace "*" par une origine spécifique si nécessaire
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 	}))
 
 	// And we serve HTTP until the world ends.
