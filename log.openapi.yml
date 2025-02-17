@@ -661,7 +661,7 @@ components:
           example: "2021-03-01"
         status:
           type: string
-          enum: ["available", "unavailable", "selected", "undefined"]
+          enum: ["available", "unavailable", "selected"]
     NoteDeFrais:
       type: object
       properties:
