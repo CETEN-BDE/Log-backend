@@ -294,6 +294,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+  /planning/autofill:
+    post:
+      security:
+        - BDE: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Autofill"
+      responses:
+        "200":
+          description: "Note de frais created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
   /docs/noteDeFrais:
     post:
       security: []
@@ -748,10 +778,24 @@ components:
         date:
           type: string
           format: date
-          example: "2021-03-01"
+          example: "2025-02-17"
         status:
           type: string
           enum: ["available", "unavailable", "selected"]
+    Autofill:
+      type: object
+      required:
+        - startDate
+        - endDate
+      properties:
+        startDate:
+          type: string
+          format: date
+          example: "2025-02-17"
+        endDate:
+          type: string
+          format: date
+          example: "2025-02-17"
     NoteDeFrais:
       type: object
       properties:
@@ -761,7 +805,7 @@ components:
         date:
           type: string
           format: date
-          example: "2021-03-01"
+          example: "2025-02-17"
         amount:
           type: number
           example: 12.34
@@ -777,7 +821,7 @@ components:
         date:
           type: string
           format: date
-          example: "2021-03-01"
+          example: "2025-02-17"
         description:
           type: string
           example: "Location description"
@@ -790,7 +834,7 @@ components:
         date:
           type: string
           format: date
-          example: "2021-03-01"
+          example: "2025-02-17"
         description:
           type: string
           example: "Location description"
@@ -803,7 +847,7 @@ components:
         date:
           type: string
           format: date
-          example: "2021-03-01"
+          example: "2025-02-17"
         description:
           type: string
           example: "Materiel description"

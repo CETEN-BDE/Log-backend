@@ -41,6 +41,12 @@ type Account struct {
 	UserId    uint    `json:"userId" bson:"user_id"`
 }
 
+// Autofill defines model for Autofill.
+type Autofill struct {
+	EndDate   openapi_types.Date `json:"endDate" bson:"end_date"`
+	StartDate openapi_types.Date `json:"startDate" bson:"start_date"`
+}
+
 // Health defines model for Health.
 type Health struct {
 	Nb     int    `json:"nb" bson:"nb"`
@@ -118,6 +124,9 @@ type PostDocsNoteDeFraisJSONRequestBody = NoteDeFrais
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody = LoginRequest
 
+// PostPlanningAutofillJSONRequestBody defines body for PostPlanningAutofill for application/json ContentType.
+type PostPlanningAutofillJSONRequestBody = Autofill
+
 // DeletePlanningAccountIDJSONRequestBody defines body for DeletePlanningAccountID for application/json ContentType.
 type DeletePlanningAccountIDJSONRequestBody = Permanence
 
@@ -174,6 +183,9 @@ type ServerInterface interface {
 
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
+
+	// (POST /planning/autofill)
+	PostPlanningAutofill(ctx echo.Context) error
 
 	// (DELETE /planning/{accountID})
 	DeletePlanningAccountID(ctx echo.Context, accountID int) error
@@ -389,6 +401,17 @@ func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	return err
 }
 
+// PostPlanningAutofill converts echo context to params.
+func (w *ServerInterfaceWrapper) PostPlanningAutofill(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostPlanningAutofill(ctx)
+	return err
+}
+
 // DeletePlanningAccountID converts echo context to params.
 func (w *ServerInterfaceWrapper) DeletePlanningAccountID(ctx echo.Context) error {
 	var err error
@@ -512,6 +535,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/docs/noteDeFrais", wrapper.PostDocsNoteDeFrais)
 	router.GET(baseURL+"/health", wrapper.GetHealth)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
+	router.POST(baseURL+"/planning/autofill", wrapper.PostPlanningAutofill)
 	router.DELETE(baseURL+"/planning/:accountID", wrapper.DeletePlanningAccountID)
 	router.GET(baseURL+"/planning/:accountID", wrapper.GetPlanningAccountID)
 	router.PATCH(baseURL+"/planning/:accountID", wrapper.PatchPlanningAccountID)
@@ -1066,6 +1090,41 @@ func (response PostLogin500JSONResponse) VisitPostLoginResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostPlanningAutofillRequestObject struct {
+	Body *PostPlanningAutofillJSONRequestBody `bson:"body"`
+}
+
+type PostPlanningAutofillResponseObject interface {
+	VisitPostPlanningAutofillResponse(w http.ResponseWriter) error
+}
+
+type PostPlanningAutofill200JSONResponse Message
+
+func (response PostPlanningAutofill200JSONResponse) VisitPostPlanningAutofillResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostPlanningAutofill400JSONResponse Message
+
+func (response PostPlanningAutofill400JSONResponse) VisitPostPlanningAutofillResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostPlanningAutofill500JSONResponse Message
+
+func (response PostPlanningAutofill500JSONResponse) VisitPostPlanningAutofillResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type DeletePlanningAccountIDRequestObject struct {
 	AccountID int                                     `json:"accountID" bson:"account_id"`
 	Body      *DeletePlanningAccountIDJSONRequestBody `bson:"body"`
@@ -1326,6 +1385,9 @@ type StrictServerInterface interface {
 
 	// (POST /login)
 	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
+
+	// (POST /planning/autofill)
+	PostPlanningAutofill(ctx context.Context, request PostPlanningAutofillRequestObject) (PostPlanningAutofillResponseObject, error)
 
 	// (DELETE /planning/{accountID})
 	DeletePlanningAccountID(ctx context.Context, request DeletePlanningAccountIDRequestObject) (DeletePlanningAccountIDResponseObject, error)
@@ -1715,6 +1777,35 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 	return nil
 }
 
+// PostPlanningAutofill operation middleware
+func (sh *strictHandler) PostPlanningAutofill(ctx echo.Context) error {
+	var request PostPlanningAutofillRequestObject
+
+	var body PostPlanningAutofillJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostPlanningAutofill(ctx.Request().Context(), request.(PostPlanningAutofillRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostPlanningAutofill")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostPlanningAutofillResponseObject); ok {
+		return validResponse.VisitPostPlanningAutofillResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // DeletePlanningAccountID operation middleware
 func (sh *strictHandler) DeletePlanningAccountID(ctx echo.Context, accountID int) error {
 	var request DeletePlanningAccountIDRequestObject
@@ -1865,33 +1956,34 @@ func (sh *strictHandler) PostRegister(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"+SRmeHo7/S8AAP//zv2t7wc7AAA=",
+	"H4sIAAAAAAAC/+xbbW/bOBL+KwTvPiqW81Jcz0WBS+OkddGmQd3DYtENUJoaW2wpUiWpdL2G//uClGRJ",
+	"tvySpLbVrL8lEskZzjwz89AcTTCVUSwFCKNxZ4I1DSEi7s9zSmUijP0zVjIGZRi4F1dMaXNNIrD/wJ8k",
+	"ijngDn5FYsO0AexhM47tE20UEyM89fBrJZO4OrzX79eNfEfq1n5bNzTRoHpBZeCxh4dSRcTgDk6YMMU0",
+	"JgyMQOHp1MMKvidMQYA7n/NFvNKuSkrczubLwVegxoo9T4wcMs4XDQMi6BIzp/pJ++TZUfvk6Pg/uKRc",
+	"QOoNpQ1R5nGLzG2wWNGbKVi3rTdAuAkXNyUG8xaet6jT2iS6qrL8tolqdppnZdSp9E5SYpgU51rLRcWC",
+	"R5o6AE0Vi62A6jK5WFQeUbMAC9ZZZrpiUzegntSuRkx8hO8J6JqMARFhvKrOVyCiFTEaAv+fAQ5URoII",
+	"Om4JMHVqxUTrH1JVlSueroNaqkFpmTq8vScGFAO+Q6/kIrfjlfegNRnB4n6i4kWhy6VSUqH81TqL5uPq",
+	"DHktDXThShGmF2WTKC8rxXZOWqdns3VEEg3SvLI1s3dXW7u+smxi8RtQEREgKPx8EJWyrEgi6wNyRxgn",
+	"A26HJ6L8n7YhZaCM8yV+zKRli9d58yOMbF1XS8Ob8mRw/0LsrUkLJxvlhWE9GbHr1A0fbUxEeC0RSVXb",
+	"QoIalujHTHSur5eb2NskkVmoAE0UM+O+pXOpk86DiLkoGABRoK5y77z97ZN1vxuIO9nbQt3QmNhu71X3",
+	"8uGTL8DAg2Xb/TAxdLWSMwpCO58I5xv8vmeXSBTPxuuO78sYhJaJotCSauRnk/yIGd9qY5hxvvkQgzi/",
+	"6aEj9E6OkN2gh+9AaZct8HGr3Wrb4XY1EjPcwaetduvU2d6EzqY+STmy9iepg6b26QhcjNgIcRXXhgZ+",
+	"DSYj1Poi96UCHUuhU/+ctNsulqQwkKZHEsecpUXb/6rTFJbyc/sXMxC5if9WMMQd/C+/YPJ+RuP9nMMX",
+	"qYooRcapUSvZ0SqICOco3xL6wUyIMtxNPXx2T/1WqZXXpRo1euKOcBYgJuLE6f1sN3LT4meFleMHdz5P",
+	"Uuh/vp3euihXJAIDSrtX1TWssVCviy1eXeyb0JLbFKi08Hoe9UYl4JVUX1lsrHQ/kFT7fI4WL8NbV1Jd",
+	"odC7QFxF4Aawm9HS2PJhxN0Jco9wO2uf7kLu/wVJTCgV+wuCBqJc6hpI3UhdjylHC17JYPzTtlBFUbVW",
+	"2qiZPhLK95O9BLFUATEQHNC6c7TeTmuToT9haQUOgEPKtasI7rrn8xh2WXllYp+5fFlyZ6sT+2Iy3yJ+",
+	"Vxi09BuANcQBuvtOtJuW7icG0U1T7AGfe8XnQpKd/Wa5CW7TwbvknKnEB5POxzOiYsvbo0TZJvfDiUrC",
+	"m0uKGshOnN0eQE/cvAM/OeT/BvOTp4jRjfPdAaHNYChRdo92jxybX72th+7sku4XT6+ly8ZDem16en2q",
+	"8Mzv2Ffg84DLZiRVMXeNv/IMVL7z384JqCxhx+efFSa1WqEA0NDqdTj+5MefcNZOtizJZQ1nW/RaJqFG",
+	"+fQNoiHQb3uymbMSl6P0Un55bLnOqq39plDq2to8pKqb6ieUgtbDhPMxslkNhLHqQNBCn0JAGrROeT9i",
+	"GikwiRJg8YoIolJ+Y4BsnQrQl7f9y36/9+G61/3SQr/LBAmAABmJmKA8CQCZ0IZYOocJpJOBtsoLgzLr",
+	"6NYf1lYhkMDVygnugzm6cDOqZilaNC4uP11evyQDGsDxyenZsxfohpjwpf8CvTEm/iD4uKZ5Y7rXEnX8",
+	"z730iTkRgomRT8ptuEuj5yYbPmva3U4gzZY/1KVfopGjgqRJ1vLS625wcpwBKp+zjp1nA5eSc1Ja6KGt",
+	"IdsBdamXsTmwLpRqxin2bEexjK5kIn6hI2xj42Tbl1HlqFl/E1WM1vvvfWpaq52hYU1Vt48PWXi/WXj2",
+	"6pB6m9ildwiPxpCURjQJ/vdA+D3sq+w7ltUnxvxrly2dFOc/ptkCaDf41CuP9xydD//Ya9EfMwM+/V/x",
+	"LyPCOCJcAQnGKNGN+aHEPVB3ebIvPo/p+K4nhYdSm87z9vM2nnqTuc9nuBy1KBgQraHySczw9Hb6dwAA",
+	"AP//F9cphyg+AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

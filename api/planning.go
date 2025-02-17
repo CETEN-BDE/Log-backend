@@ -94,7 +94,7 @@ func (s Server) PostPlanningAccountID(ctx echo.Context, accountID int) error {
 		autogen.PostPlanningAccountID500JSONResponse{Message: "Can't access to DB"}.VisitPostPlanningAccountIDResponse(ctx.Response())
 		return result.Error
 	}
-	
+
 	result = s.db.Save(&perm)
 	if result.Error != nil {
 		autogen.PostPlanningAccountID500JSONResponse{Message: "Can't access to DB"}.VisitPostPlanningAccountIDResponse(ctx.Response())
