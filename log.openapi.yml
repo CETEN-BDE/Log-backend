@@ -324,6 +324,73 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+  /planning/weekPriority/{accountID}:
+    get:
+      security:
+        - BDE: []
+      parameters:
+        - name: accountID
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: "Account ID"
+      responses:
+        "200":
+          description: "Week priority liste"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeekPriority"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+    patch:
+      security:
+        - BDE: []
+      parameters:
+        - name: accountID
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: "Account ID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeekPriority"
+      responses:
+        "200":
+          description: "Week priority patch"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
   /docs/noteDeFrais:
     post:
       security: []
@@ -796,6 +863,27 @@ components:
           type: string
           format: date
           example: "2025-02-17"
+    WeekPriority:
+      type: object
+      required:
+        - weekPriority
+      properties:
+        weekPriority:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayPriority"
+    DayPriority:
+      type: object
+      required:
+        - day
+        - priority
+      properties:
+        day:
+          type: integer
+          example: 1
+        priority:
+          type: integer
+          example: 1
     NoteDeFrais:
       type: object
       properties:

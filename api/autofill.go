@@ -6,9 +6,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
-func autoFill(start types.Date, end types.Date) error {
+func autoFill(db *gorm.DB, start types.Date, end types.Date) error {
 	logrus.Infof("AutoFill is not implemented yet for %s to %s", start.String(), end.String())
 	return nil
 }
@@ -20,7 +21,7 @@ func (s Server) PostPlanningAutofill(ctx echo.Context) error {
 		autogen.PostPlanningAutofill400JSONResponse{Message: "Wrong Request"}.VisitPostPlanningAutofillResponse(ctx.Response())
 		return err
 	}
-	err = autoFill(req.StartDate, req.StartDate)
+	err = autoFill(s.db, req.StartDate, req.EndDate)
 	if err != nil {
 		autogen.PostPlanningAutofill500JSONResponse{Message: "AutoFill failed because :"}.VisitPostPlanningAutofillResponse(ctx.Response())
 		return err
