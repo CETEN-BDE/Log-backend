@@ -8,6 +8,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,6 +32,11 @@ func main() {
 	e := echo.New()
 
 	autogen.RegisterHandlers(e, server)
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173", "https://log.ceten.fr"}, // Remplace "*" par une origine spécifique si nécessaire
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	}))
 
 	// And we serve HTTP until the world ends.
 	logrus.Fatal(e.Start("0.0.0.0:" + os.Getenv("PORT")))
