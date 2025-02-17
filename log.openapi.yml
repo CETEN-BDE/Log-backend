@@ -168,6 +168,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+    post:
+      security:
+        - BDE: []
+      parameters:
+        - name: accountID
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: "Account ID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Permanence"
+      responses:
+        "200":
+          description: "Permanence created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "409":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
     patch:
       security:
         - BDE: []
@@ -194,6 +236,54 @@ paths:
                 $ref: "#/components/schemas/Message"
         "400":
           description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+    delete:
+      security:
+        - BDE: []
+      parameters:
+        - name: accountID
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+          description: "Account ID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Permanence"
+      responses:
+        "200":
+          description: "Permanence deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "404":
+          description: "Not Found"
           content:
             application/json:
               schema:

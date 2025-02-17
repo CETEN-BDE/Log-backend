@@ -118,8 +118,14 @@ type PostDocsNoteDeFraisJSONRequestBody = NoteDeFrais
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody = LoginRequest
 
+// DeletePlanningAccountIDJSONRequestBody defines body for DeletePlanningAccountID for application/json ContentType.
+type DeletePlanningAccountIDJSONRequestBody = Permanence
+
 // PatchPlanningAccountIDJSONRequestBody defines body for PatchPlanningAccountID for application/json ContentType.
 type PatchPlanningAccountIDJSONRequestBody = Permanence
+
+// PostPlanningAccountIDJSONRequestBody defines body for PostPlanningAccountID for application/json ContentType.
+type PostPlanningAccountIDJSONRequestBody = Permanence
 
 // PostRegisterJSONRequestBody defines body for PostRegister for application/json ContentType.
 type PostRegisterJSONRequestBody = RegisterRequest
@@ -169,11 +175,17 @@ type ServerInterface interface {
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
 
+	// (DELETE /planning/{accountID})
+	DeletePlanningAccountID(ctx echo.Context, accountID int) error
+
 	// (GET /planning/{accountID})
 	GetPlanningAccountID(ctx echo.Context, accountID int) error
 
 	// (PATCH /planning/{accountID})
 	PatchPlanningAccountID(ctx echo.Context, accountID int) error
+
+	// (POST /planning/{accountID})
+	PostPlanningAccountID(ctx echo.Context, accountID int) error
 
 	// (POST /register)
 	PostRegister(ctx echo.Context) error
@@ -377,6 +389,24 @@ func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	return err
 }
 
+// DeletePlanningAccountID converts echo context to params.
+func (w *ServerInterfaceWrapper) DeletePlanningAccountID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "accountID" -------------
+	var accountID int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "accountID", ctx.Param("accountID"), &accountID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeletePlanningAccountID(ctx, accountID)
+	return err
+}
+
 // GetPlanningAccountID converts echo context to params.
 func (w *ServerInterfaceWrapper) GetPlanningAccountID(ctx echo.Context) error {
 	var err error
@@ -410,6 +440,24 @@ func (w *ServerInterfaceWrapper) PatchPlanningAccountID(ctx echo.Context) error 
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PatchPlanningAccountID(ctx, accountID)
+	return err
+}
+
+// PostPlanningAccountID converts echo context to params.
+func (w *ServerInterfaceWrapper) PostPlanningAccountID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "accountID" -------------
+	var accountID int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "accountID", ctx.Param("accountID"), &accountID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
+	}
+
+	ctx.Set(BDEScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostPlanningAccountID(ctx, accountID)
 	return err
 }
 
@@ -464,8 +512,10 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/docs/noteDeFrais", wrapper.PostDocsNoteDeFrais)
 	router.GET(baseURL+"/health", wrapper.GetHealth)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
+	router.DELETE(baseURL+"/planning/:accountID", wrapper.DeletePlanningAccountID)
 	router.GET(baseURL+"/planning/:accountID", wrapper.GetPlanningAccountID)
 	router.PATCH(baseURL+"/planning/:accountID", wrapper.PatchPlanningAccountID)
+	router.POST(baseURL+"/planning/:accountID", wrapper.PostPlanningAccountID)
 	router.POST(baseURL+"/register", wrapper.PostRegister)
 
 }
@@ -1016,6 +1066,51 @@ func (response PostLogin500JSONResponse) VisitPostLoginResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeletePlanningAccountIDRequestObject struct {
+	AccountID int                                     `json:"accountID" bson:"account_id"`
+	Body      *DeletePlanningAccountIDJSONRequestBody `bson:"body"`
+}
+
+type DeletePlanningAccountIDResponseObject interface {
+	VisitDeletePlanningAccountIDResponse(w http.ResponseWriter) error
+}
+
+type DeletePlanningAccountID200JSONResponse Message
+
+func (response DeletePlanningAccountID200JSONResponse) VisitDeletePlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeletePlanningAccountID400JSONResponse Message
+
+func (response DeletePlanningAccountID400JSONResponse) VisitDeletePlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeletePlanningAccountID404JSONResponse Message
+
+func (response DeletePlanningAccountID404JSONResponse) VisitDeletePlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeletePlanningAccountID500JSONResponse Message
+
+func (response DeletePlanningAccountID500JSONResponse) VisitDeletePlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetPlanningAccountIDRequestObject struct {
 	AccountID int `json:"accountID" bson:"account_id"`
 }
@@ -1078,9 +1173,63 @@ func (response PatchPlanningAccountID400JSONResponse) VisitPatchPlanningAccountI
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PatchPlanningAccountID404JSONResponse Message
+
+func (response PatchPlanningAccountID404JSONResponse) VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PatchPlanningAccountID500JSONResponse Message
 
 func (response PatchPlanningAccountID500JSONResponse) VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostPlanningAccountIDRequestObject struct {
+	AccountID int                                   `json:"accountID" bson:"account_id"`
+	Body      *PostPlanningAccountIDJSONRequestBody `bson:"body"`
+}
+
+type PostPlanningAccountIDResponseObject interface {
+	VisitPostPlanningAccountIDResponse(w http.ResponseWriter) error
+}
+
+type PostPlanningAccountID200JSONResponse Message
+
+func (response PostPlanningAccountID200JSONResponse) VisitPostPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostPlanningAccountID400JSONResponse Message
+
+func (response PostPlanningAccountID400JSONResponse) VisitPostPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostPlanningAccountID409JSONResponse Message
+
+func (response PostPlanningAccountID409JSONResponse) VisitPostPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostPlanningAccountID500JSONResponse Message
+
+func (response PostPlanningAccountID500JSONResponse) VisitPostPlanningAccountIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -1178,11 +1327,17 @@ type StrictServerInterface interface {
 	// (POST /login)
 	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
 
+	// (DELETE /planning/{accountID})
+	DeletePlanningAccountID(ctx context.Context, request DeletePlanningAccountIDRequestObject) (DeletePlanningAccountIDResponseObject, error)
+
 	// (GET /planning/{accountID})
 	GetPlanningAccountID(ctx context.Context, request GetPlanningAccountIDRequestObject) (GetPlanningAccountIDResponseObject, error)
 
 	// (PATCH /planning/{accountID})
 	PatchPlanningAccountID(ctx context.Context, request PatchPlanningAccountIDRequestObject) (PatchPlanningAccountIDResponseObject, error)
+
+	// (POST /planning/{accountID})
+	PostPlanningAccountID(ctx context.Context, request PostPlanningAccountIDRequestObject) (PostPlanningAccountIDResponseObject, error)
 
 	// (POST /register)
 	PostRegister(ctx context.Context, request PostRegisterRequestObject) (PostRegisterResponseObject, error)
@@ -1560,6 +1715,37 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 	return nil
 }
 
+// DeletePlanningAccountID operation middleware
+func (sh *strictHandler) DeletePlanningAccountID(ctx echo.Context, accountID int) error {
+	var request DeletePlanningAccountIDRequestObject
+
+	request.AccountID = accountID
+
+	var body DeletePlanningAccountIDJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeletePlanningAccountID(ctx.Request().Context(), request.(DeletePlanningAccountIDRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeletePlanningAccountID")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeletePlanningAccountIDResponseObject); ok {
+		return validResponse.VisitDeletePlanningAccountIDResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // GetPlanningAccountID operation middleware
 func (sh *strictHandler) GetPlanningAccountID(ctx echo.Context, accountID int) error {
 	var request GetPlanningAccountIDRequestObject
@@ -1616,6 +1802,37 @@ func (sh *strictHandler) PatchPlanningAccountID(ctx echo.Context, accountID int)
 	return nil
 }
 
+// PostPlanningAccountID operation middleware
+func (sh *strictHandler) PostPlanningAccountID(ctx echo.Context, accountID int) error {
+	var request PostPlanningAccountIDRequestObject
+
+	request.AccountID = accountID
+
+	var body PostPlanningAccountIDJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostPlanningAccountID(ctx.Request().Context(), request.(PostPlanningAccountIDRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostPlanningAccountID")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostPlanningAccountIDResponseObject); ok {
+		return validResponse.VisitPostPlanningAccountIDResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // PostRegister operation middleware
 func (sh *strictHandler) PostRegister(ctx echo.Context) error {
 	var request PostRegisterRequestObject
@@ -1648,32 +1865,33 @@ func (sh *strictHandler) PostRegister(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"+SRmeHo7/S8AAP//zv2t7wc7AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
