@@ -17,7 +17,7 @@ func main() {
 	if err != nil {
 		logrus.Fatal("Error loading .env file")
 	}
-	
+
 	// Open a database connection
 	sqlDB, db, err := db.InitDB()
 	if err != nil {
@@ -34,8 +34,9 @@ func main() {
 	autogen.RegisterHandlers(e, server)
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:5173", "https://log.ceten.fr"}, // Remplace "*" par une origine spécifique si nécessaire
-		AllowMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowCredentials: true,
+		AllowOrigins:     []string{"http://localhost:5173", "https://log.ceten.fr"}, // Remplace "*" par une origine spécifique si nécessaire
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 	}))
 
 	// And we serve HTTP until the world ends.

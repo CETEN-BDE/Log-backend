@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log-backend/autogen"
 	"log-backend/internal/models"
+	"net/http"
 	"os"
 	"time"
 
@@ -44,7 +45,7 @@ func (s Server) PostLogin(ctx echo.Context) error {
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = req.Email
+	claims["AccountID"] = account.ID
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
 	// Generate encoded token
@@ -54,7 +55,17 @@ func (s Server) PostLogin(ctx echo.Context) error {
 		return err
 	}
 
-	autogen.PostLogin200Response{Headers: autogen.PostLogin200ResponseHeaders{SetCookie: t}}.VisitPostLoginResponse(ctx.Response())
+	cookie := new(http.Cookie)
+	cookie.Name = "token"
+	cookie.Value = t
+	cookie.Expires = time.Now().Add(24 * time.Hour) // Cookie valid for 24 hours
+	// cookie.HttpOnly = true                          // Prevents JavaScript from accessing the cookie
+	// cookie.Secure = true                            // Ensure the cookie is sent over HTTPS (in production)
+	// cookie.Path = "/"
+
+	// Set the cookie in the response
+	ctx.SetCookie(cookie)
+	autogen.PostLogin200JSONResponse{Message: "Login Success"}.VisitPostLoginResponse(ctx.Response())
 	return nil
 }
 
@@ -76,11 +87,11 @@ func (s Server) PostRegister(ctx echo.Context) error {
 
 		account := models.Account{
 			FirstName: req.FirstName,
-			LastName: req.LastName,
-			Group: req.Group,
-			ClubId: int(req.ClubId),
-			Email:    req.Email,
-			Password: string(hashedPassword),
+			LastName:  req.LastName,
+			Group:     req.Group,
+			ClubId:    int(req.ClubId),
+			Email:     req.Email,
+			Password:  string(hashedPassword),
 		}
 		result_create := s.db.Create(&account)
 		if result_create.Error != nil {
@@ -110,5 +121,19 @@ func (s Server) GetAccountsClubId(ctx echo.Context, clubId int) error {
 	}
 	logrus.Infof("GET /account/%d: Account Club Id", clubId)
 	resp.VisitGetAccountsClubIdResponse(ctx.Response())
+	return nil
+}
+
+func (s Server) GetAccount(ctx echo.Context) error {
+	tokenRaw := ctx.Get("token")
+	token, ok := tokenRaw.(*jwt.Token)
+	if !ok || token == nil {
+		logrus.Error("Unauthorized")
+		autogen.GetPlanningWeekPriorityAccountID401JSONResponse{Message: "Unauthorized"}.VisitGetPlanningWeekPriorityAccountIDResponse(ctx.Response())
+		return nil
+	}
+    claims := token.Claims.(jwt.MapClaims)
+    AccountID := claims["AccountID"].(string)
+	logrus.Info(AccountID)
 	return nil
 }

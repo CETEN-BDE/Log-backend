@@ -38,11 +38,10 @@ paths:
           description: >
             Successfully authenticated.
             The session ID is returned in a cookie named `JSESSIONID`. You need to include this cookie in subsequent requests.
-          headers:
-            Set-Cookie:
+          content:
+            application/json:
               schema:
-                type: string
-                example: CETEN=abcde12345; Path=/; HttpOnly
+                $ref: "#/components/schemas/Message"
 
         "400":
           description: "Invalid input"
@@ -125,6 +124,37 @@ paths:
                   $ref: "#/components/schemas/Account"
         "400":
           description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+  /account:
+    get:
+      security:
+        - BDE: []
+      responses:
+        "200":
+          description: "Get my account"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+        "400":
+          description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "401":
+          description: "Unauthorized"
           content:
             application/json:
               schema:
@@ -345,6 +375,12 @@ paths:
                 $ref: "#/components/schemas/WeekPriority"
         "400":
           description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "401":
+          description: "Unauthorized"
           content:
             application/json:
               schema:
