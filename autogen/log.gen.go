@@ -138,8 +138,8 @@ type PostLoginJSONRequestBody = LoginRequest
 // PostPlanningAutofillJSONRequestBody defines body for PostPlanningAutofill for application/json ContentType.
 type PostPlanningAutofillJSONRequestBody = Autofill
 
-// PatchPlanningWeekPriorityAccountIDJSONRequestBody defines body for PatchPlanningWeekPriorityAccountID for application/json ContentType.
-type PatchPlanningWeekPriorityAccountIDJSONRequestBody = WeekPriority
+// PatchPlanningWeekPriorityJSONRequestBody defines body for PatchPlanningWeekPriority for application/json ContentType.
+type PatchPlanningWeekPriorityJSONRequestBody = WeekPriority
 
 // DeletePlanningAccountIDJSONRequestBody defines body for DeletePlanningAccountID for application/json ContentType.
 type DeletePlanningAccountIDJSONRequestBody = Permanence
@@ -204,11 +204,11 @@ type ServerInterface interface {
 	// (POST /planning/autofill)
 	PostPlanningAutofill(ctx echo.Context) error
 
-	// (GET /planning/weekPriority/{accountID})
-	GetPlanningWeekPriorityAccountID(ctx echo.Context, accountID int) error
+	// (GET /planning/weekPriority)
+	GetPlanningWeekPriority(ctx echo.Context) error
 
-	// (PATCH /planning/weekPriority/{accountID})
-	PatchPlanningWeekPriorityAccountID(ctx echo.Context, accountID int) error
+	// (PATCH /planning/weekPriority)
+	PatchPlanningWeekPriority(ctx echo.Context) error
 
 	// (DELETE /planning/{accountID})
 	DeletePlanningAccountID(ctx echo.Context, accountID int) error
@@ -446,39 +446,25 @@ func (w *ServerInterfaceWrapper) PostPlanningAutofill(ctx echo.Context) error {
 	return err
 }
 
-// GetPlanningWeekPriorityAccountID converts echo context to params.
-func (w *ServerInterfaceWrapper) GetPlanningWeekPriorityAccountID(ctx echo.Context) error {
+// GetPlanningWeekPriority converts echo context to params.
+func (w *ServerInterfaceWrapper) GetPlanningWeekPriority(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "accountID" -------------
-	var accountID int
-
-	err = runtime.BindStyledParameterWithOptions("simple", "accountID", ctx.Param("accountID"), &accountID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
-	}
 
 	ctx.Set(BDEScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetPlanningWeekPriorityAccountID(ctx, accountID)
+	err = w.Handler.GetPlanningWeekPriority(ctx)
 	return err
 }
 
-// PatchPlanningWeekPriorityAccountID converts echo context to params.
-func (w *ServerInterfaceWrapper) PatchPlanningWeekPriorityAccountID(ctx echo.Context) error {
+// PatchPlanningWeekPriority converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchPlanningWeekPriority(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "accountID" -------------
-	var accountID int
-
-	err = runtime.BindStyledParameterWithOptions("simple", "accountID", ctx.Param("accountID"), &accountID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
-	}
 
 	ctx.Set(BDEScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PatchPlanningWeekPriorityAccountID(ctx, accountID)
+	err = w.Handler.PatchPlanningWeekPriority(ctx)
 	return err
 }
 
@@ -607,8 +593,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/health", wrapper.GetHealth)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 	router.POST(baseURL+"/planning/autofill", wrapper.PostPlanningAutofill)
-	router.GET(baseURL+"/planning/weekPriority/:accountID", wrapper.GetPlanningWeekPriorityAccountID)
-	router.PATCH(baseURL+"/planning/weekPriority/:accountID", wrapper.PatchPlanningWeekPriorityAccountID)
+	router.GET(baseURL+"/planning/weekPriority", wrapper.GetPlanningWeekPriority)
+	router.PATCH(baseURL+"/planning/weekPriority", wrapper.PatchPlanningWeekPriority)
 	router.DELETE(baseURL+"/planning/:accountID", wrapper.DeletePlanningAccountID)
 	router.GET(baseURL+"/planning/:accountID", wrapper.GetPlanningAccountID)
 	router.PATCH(baseURL+"/planning/:accountID", wrapper.PatchPlanningAccountID)
@@ -1236,80 +1222,87 @@ func (response PostPlanningAutofill500JSONResponse) VisitPostPlanningAutofillRes
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetPlanningWeekPriorityAccountIDRequestObject struct {
-	AccountID int `json:"accountID" bson:"account_id"`
+type GetPlanningWeekPriorityRequestObject struct {
 }
 
-type GetPlanningWeekPriorityAccountIDResponseObject interface {
-	VisitGetPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error
+type GetPlanningWeekPriorityResponseObject interface {
+	VisitGetPlanningWeekPriorityResponse(w http.ResponseWriter) error
 }
 
-type GetPlanningWeekPriorityAccountID200JSONResponse WeekPriority
+type GetPlanningWeekPriority200JSONResponse WeekPriority
 
-func (response GetPlanningWeekPriorityAccountID200JSONResponse) VisitGetPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error {
+func (response GetPlanningWeekPriority200JSONResponse) VisitGetPlanningWeekPriorityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetPlanningWeekPriorityAccountID400JSONResponse Message
+type GetPlanningWeekPriority400JSONResponse Message
 
-func (response GetPlanningWeekPriorityAccountID400JSONResponse) VisitGetPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error {
+func (response GetPlanningWeekPriority400JSONResponse) VisitGetPlanningWeekPriorityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetPlanningWeekPriorityAccountID401JSONResponse Message
+type GetPlanningWeekPriority401JSONResponse Message
 
-func (response GetPlanningWeekPriorityAccountID401JSONResponse) VisitGetPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error {
+func (response GetPlanningWeekPriority401JSONResponse) VisitGetPlanningWeekPriorityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetPlanningWeekPriorityAccountID500JSONResponse Message
+type GetPlanningWeekPriority500JSONResponse Message
 
-func (response GetPlanningWeekPriorityAccountID500JSONResponse) VisitGetPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error {
+func (response GetPlanningWeekPriority500JSONResponse) VisitGetPlanningWeekPriorityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PatchPlanningWeekPriorityAccountIDRequestObject struct {
-	AccountID int                                                `json:"accountID" bson:"account_id"`
-	Body      *PatchPlanningWeekPriorityAccountIDJSONRequestBody `bson:"body"`
+type PatchPlanningWeekPriorityRequestObject struct {
+	Body *PatchPlanningWeekPriorityJSONRequestBody `bson:"body"`
 }
 
-type PatchPlanningWeekPriorityAccountIDResponseObject interface {
-	VisitPatchPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error
+type PatchPlanningWeekPriorityResponseObject interface {
+	VisitPatchPlanningWeekPriorityResponse(w http.ResponseWriter) error
 }
 
-type PatchPlanningWeekPriorityAccountID200JSONResponse Message
+type PatchPlanningWeekPriority200JSONResponse Message
 
-func (response PatchPlanningWeekPriorityAccountID200JSONResponse) VisitPatchPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error {
+func (response PatchPlanningWeekPriority200JSONResponse) VisitPatchPlanningWeekPriorityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PatchPlanningWeekPriorityAccountID400JSONResponse Message
+type PatchPlanningWeekPriority400JSONResponse Message
 
-func (response PatchPlanningWeekPriorityAccountID400JSONResponse) VisitPatchPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error {
+func (response PatchPlanningWeekPriority400JSONResponse) VisitPatchPlanningWeekPriorityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PatchPlanningWeekPriorityAccountID500JSONResponse Message
+type PatchPlanningWeekPriority401JSONResponse Message
 
-func (response PatchPlanningWeekPriorityAccountID500JSONResponse) VisitPatchPlanningWeekPriorityAccountIDResponse(w http.ResponseWriter) error {
+func (response PatchPlanningWeekPriority401JSONResponse) VisitPatchPlanningWeekPriorityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchPlanningWeekPriority500JSONResponse Message
+
+func (response PatchPlanningWeekPriority500JSONResponse) VisitPatchPlanningWeekPriorityResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -1339,6 +1332,15 @@ type DeletePlanningAccountID400JSONResponse Message
 func (response DeletePlanningAccountID400JSONResponse) VisitDeletePlanningAccountIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeletePlanningAccountID401JSONResponse Message
+
+func (response DeletePlanningAccountID401JSONResponse) VisitDeletePlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1423,6 +1425,15 @@ func (response PatchPlanningAccountID400JSONResponse) VisitPatchPlanningAccountI
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PatchPlanningAccountID401JSONResponse Message
+
+func (response PatchPlanningAccountID401JSONResponse) VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PatchPlanningAccountID404JSONResponse Message
 
 func (response PatchPlanningAccountID404JSONResponse) VisitPatchPlanningAccountIDResponse(w http.ResponseWriter) error {
@@ -1464,6 +1475,15 @@ type PostPlanningAccountID400JSONResponse Message
 func (response PostPlanningAccountID400JSONResponse) VisitPostPlanningAccountIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostPlanningAccountID401JSONResponse Message
+
+func (response PostPlanningAccountID401JSONResponse) VisitPostPlanningAccountIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1583,11 +1603,11 @@ type StrictServerInterface interface {
 	// (POST /planning/autofill)
 	PostPlanningAutofill(ctx context.Context, request PostPlanningAutofillRequestObject) (PostPlanningAutofillResponseObject, error)
 
-	// (GET /planning/weekPriority/{accountID})
-	GetPlanningWeekPriorityAccountID(ctx context.Context, request GetPlanningWeekPriorityAccountIDRequestObject) (GetPlanningWeekPriorityAccountIDResponseObject, error)
+	// (GET /planning/weekPriority)
+	GetPlanningWeekPriority(ctx context.Context, request GetPlanningWeekPriorityRequestObject) (GetPlanningWeekPriorityResponseObject, error)
 
-	// (PATCH /planning/weekPriority/{accountID})
-	PatchPlanningWeekPriorityAccountID(ctx context.Context, request PatchPlanningWeekPriorityAccountIDRequestObject) (PatchPlanningWeekPriorityAccountIDResponseObject, error)
+	// (PATCH /planning/weekPriority)
+	PatchPlanningWeekPriority(ctx context.Context, request PatchPlanningWeekPriorityRequestObject) (PatchPlanningWeekPriorityResponseObject, error)
 
 	// (DELETE /planning/{accountID})
 	DeletePlanningAccountID(ctx context.Context, request DeletePlanningAccountIDRequestObject) (DeletePlanningAccountIDResponseObject, error)
@@ -2029,56 +2049,52 @@ func (sh *strictHandler) PostPlanningAutofill(ctx echo.Context) error {
 	return nil
 }
 
-// GetPlanningWeekPriorityAccountID operation middleware
-func (sh *strictHandler) GetPlanningWeekPriorityAccountID(ctx echo.Context, accountID int) error {
-	var request GetPlanningWeekPriorityAccountIDRequestObject
-
-	request.AccountID = accountID
+// GetPlanningWeekPriority operation middleware
+func (sh *strictHandler) GetPlanningWeekPriority(ctx echo.Context) error {
+	var request GetPlanningWeekPriorityRequestObject
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetPlanningWeekPriorityAccountID(ctx.Request().Context(), request.(GetPlanningWeekPriorityAccountIDRequestObject))
+		return sh.ssi.GetPlanningWeekPriority(ctx.Request().Context(), request.(GetPlanningWeekPriorityRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetPlanningWeekPriorityAccountID")
+		handler = middleware(handler, "GetPlanningWeekPriority")
 	}
 
 	response, err := handler(ctx, request)
 
 	if err != nil {
 		return err
-	} else if validResponse, ok := response.(GetPlanningWeekPriorityAccountIDResponseObject); ok {
-		return validResponse.VisitGetPlanningWeekPriorityAccountIDResponse(ctx.Response())
+	} else if validResponse, ok := response.(GetPlanningWeekPriorityResponseObject); ok {
+		return validResponse.VisitGetPlanningWeekPriorityResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
 	return nil
 }
 
-// PatchPlanningWeekPriorityAccountID operation middleware
-func (sh *strictHandler) PatchPlanningWeekPriorityAccountID(ctx echo.Context, accountID int) error {
-	var request PatchPlanningWeekPriorityAccountIDRequestObject
+// PatchPlanningWeekPriority operation middleware
+func (sh *strictHandler) PatchPlanningWeekPriority(ctx echo.Context) error {
+	var request PatchPlanningWeekPriorityRequestObject
 
-	request.AccountID = accountID
-
-	var body PatchPlanningWeekPriorityAccountIDJSONRequestBody
+	var body PatchPlanningWeekPriorityJSONRequestBody
 	if err := ctx.Bind(&body); err != nil {
 		return err
 	}
 	request.Body = &body
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PatchPlanningWeekPriorityAccountID(ctx.Request().Context(), request.(PatchPlanningWeekPriorityAccountIDRequestObject))
+		return sh.ssi.PatchPlanningWeekPriority(ctx.Request().Context(), request.(PatchPlanningWeekPriorityRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PatchPlanningWeekPriorityAccountID")
+		handler = middleware(handler, "PatchPlanningWeekPriority")
 	}
 
 	response, err := handler(ctx, request)
 
 	if err != nil {
 		return err
-	} else if validResponse, ok := response.(PatchPlanningWeekPriorityAccountIDResponseObject); ok {
-		return validResponse.VisitPatchPlanningWeekPriorityAccountIDResponse(ctx.Response())
+	} else if validResponse, ok := response.(PatchPlanningWeekPriorityResponseObject); ok {
+		return validResponse.VisitPatchPlanningWeekPriorityResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -2235,35 +2251,35 @@ func (sh *strictHandler) PostRegister(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"E5NeABp4byx9ElO8uFr8HQAA//+fAV0dOUcAAA==",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

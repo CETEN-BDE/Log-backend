@@ -125,26 +125,16 @@ func (s Server) GetAccountsClubId(ctx echo.Context, clubId int) error {
 }
 
 func (s Server) GetAccount(ctx echo.Context) error {
-	tokenRaw, err := ctx.Cookie("token")
+	AccountID, err := GetAccountIDFromJWT(ctx)
 	if err != nil {
 		logrus.Error(err)
-		autogen.GetPlanningWeekPriorityAccountID401JSONResponse{Message: "Unauthorized"}.VisitGetPlanningWeekPriorityAccountIDResponse(ctx.Response())
-		return nil
+		autogen.GetAccount401JSONResponse{Message: "Unauthorized"}.VisitGetAccountResponse(ctx.Response())
+		return err
 	}
-	token, err := jwt.Parse(tokenRaw.Value, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
-	if err != nil || !token.Valid {
-		logrus.Error(err)
-		autogen.GetPlanningWeekPriorityAccountID401JSONResponse{Message: "Unauthorized"}.VisitGetPlanningWeekPriorityAccountIDResponse(ctx.Response())
-		return nil
-	}
-    claims := token.Claims.(jwt.MapClaims)
-    AccountID := claims["AccountID"].(float64)
 	var account models.Account
 	result_account := s.db.Where("id = ?", AccountID).First(&account)
 	if result_account.Error != nil {
-		autogen.PostLogin500JSONResponse{Message: "Can't access to the DB"}.VisitPostLoginResponse(ctx.Response())
+		autogen.GetAccount500JSONResponse{Message: "Can't access to the DB"}.VisitGetAccountResponse(ctx.Response())
 		return result_account.Error
 	}
 	resp := autogen.GetAccount200JSONResponse{

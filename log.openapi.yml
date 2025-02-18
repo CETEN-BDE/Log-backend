@@ -226,6 +226,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
         "409":
           description: "Invalid input"
           content:
@@ -264,6 +270,12 @@ paths:
                 $ref: "#/components/schemas/Message"
         "400":
           description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "401":
+          description: "Unauthorized"
           content:
             application/json:
               schema:
@@ -310,6 +322,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
         "404":
           description: "Not Found"
           content:
@@ -352,18 +370,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
-  /planning/weekPriority/{accountID}:
+  /planning/weekPriority:
     get:
       security:
         - BDE: []
-      parameters:
-        - name: accountID
-          in: path
-          required: true
-          schema:
-            type: integer
-            example: 1
-          description: "Account ID"
       responses:
         "200":
           description: "Week priority liste"
@@ -392,14 +402,6 @@ paths:
     patch:
       security:
         - BDE: []
-      parameters:
-        - name: accountID
-          in: path
-          required: true
-          schema:
-            type: integer
-            example: 1
-          description: "Account ID"
       requestBody:
         required: true
         content:
@@ -415,6 +417,12 @@ paths:
                 $ref: "#/components/schemas/Message"
         "400":
           description: "Invalid input"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "401":
+          description: "Unauthorized"
           content:
             application/json:
               schema:
