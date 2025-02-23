@@ -878,6 +878,9 @@ components:
         Group:
           type: string
           example: ISS
+        clubId:
+          type: integer
+          example: 1
     Permanence:
       type: object
       required:

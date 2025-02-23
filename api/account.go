@@ -141,6 +141,8 @@ func (s Server) GetAccount(ctx echo.Context) error {
 		UserId: uint(AccountID),
 		FirstName: account.FirstName,
 		LastName: account.LastName,
+		Group: &account.Group,
+		ClubId: &account.ClubId,
 	}
 	resp.VisitGetAccountResponse(ctx.Response())
 	logrus.Info(AccountID)
