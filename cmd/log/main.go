@@ -48,6 +48,7 @@ func main() {
 	// Global middlewares
 	swagger, _ := autogen.GetSwagger()
 	e.Use(echomiddleware.OapiRequestValidatorWithOptions(swagger, &echomiddleware.Options{
+		SilenceServersWarning: true,
 		Options: openapi3filter.Options{
 			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
 				// Convert the echo.Context from the context

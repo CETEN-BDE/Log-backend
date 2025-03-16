@@ -7,7 +7,9 @@ info:
     url: https://opensource.org/license/mit/
 servers:
   - url: http://localhost:8080
+    description: Development server
   - url: https://log.ceten.fr/api
+    description: Production server
 paths:
   /health:
     get:
