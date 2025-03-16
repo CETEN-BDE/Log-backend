@@ -137,6 +137,14 @@ func (s Server) PostLogout(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, map[string]string{"message": "Successfully logged out"})
 }
 
+func (s Server) GetAuthGoogle(ctx echo.Context) error {
+    return s.HandleGoogleLogin(ctx)
+}
+
+func (s Server) GetAuthGoogleCallback(ctx echo.Context, params autogen.GetAuthGoogleCallbackParams) error {
+    return s.HandleGoogleCallback(ctx)
+}
+
 func (s Server) GetAccount(ctx echo.Context) error {
 	userID := ctx.Get("user_id")
 	if userID == nil {

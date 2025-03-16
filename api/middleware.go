@@ -18,6 +18,7 @@ var store *sessions.CookieStore
 // Store for sessions
 func (s Server) Init() {
     store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_SECRET")))
+    InitializeOAuth()
 }
 
 // SecurityHandler validates the security requirements defined in the OpenAPI spec

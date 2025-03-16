@@ -26,6 +26,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Message"
+  /auth/google:
+    get:
+      responses:
+        "302":
+          description: "Redirect to Google login"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  /auth/google/callback:
+    get:
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "302":
+          description: "Redirect after successful login"
+        "400":
+          description: "Invalid state"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+        "500":
+          description: "Error 500"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
   /login:
     post:
       requestBody:
