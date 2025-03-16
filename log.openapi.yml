@@ -32,7 +32,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/LoginRequest"
-      security: []
       responses:
         "200":
           description: >
@@ -69,7 +68,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RegisterRequest"
-      security: []
       responses:
         "200":
           description: "Register"
@@ -111,8 +109,6 @@ paths:
           example: 1
         description: "club ID"
     get:
-      security:
-        - BDE: []
       responses:
         "200":
           description: "Get all accounts with clubId"
@@ -137,7 +133,7 @@ paths:
   /account:
     get:
       security:
-        - BDE: []
+        - Auth: []
       responses:
         "200":
           description: "Get my account"
@@ -165,8 +161,6 @@ paths:
                 $ref: "#/components/schemas/Message"
   /planning/{accountID}:
     get:
-      security:
-        - BDE: []
       parameters:
         - name: accountID
           in: path
@@ -198,7 +192,7 @@ paths:
                 $ref: "#/components/schemas/Message"
     post:
       security:
-        - BDE: []
+        - Auth: ["BDE"]
       parameters:
         - name: accountID
           in: path
@@ -246,7 +240,7 @@ paths:
                 $ref: "#/components/schemas/Message"
     patch:
       security:
-        - BDE: []
+        - Auth: ["BDE"]
       parameters:
         - name: accountID
           in: path
@@ -294,7 +288,7 @@ paths:
                 $ref: "#/components/schemas/Message"
     delete:
       security:
-        - BDE: []
+        - Auth: ["BDE"]
       parameters:
         - name: accountID
           in: path
@@ -343,7 +337,7 @@ paths:
   /planning/autofill:
     post:
       security:
-        - BDE: []
+        - Auth: ["BDE", "Respo_Log"]
       requestBody:
         required: true
         content:
@@ -373,7 +367,7 @@ paths:
   /planning/weekPriority:
     get:
       security:
-        - BDE: []
+        - Auth: ["BDE"]
       responses:
         "200":
           description: "Week priority liste"
@@ -401,7 +395,7 @@ paths:
                 $ref: "#/components/schemas/Message"
     patch:
       security:
-        - BDE: []
+        - Auth: ["BDE"]
       requestBody:
         required: true
         content:
@@ -465,7 +459,7 @@ paths:
   /docs/locationPerso:
     get:
       security:
-        - BDE: []
+        - Auth: []
       responses:
         "200":
           description: "Location perso liste"
@@ -505,7 +499,7 @@ paths:
   /docs/locationAsso:
     get:
       security:
-        - BDE: []
+        - Auth: []
       responses:
         "200":
           description: "Location perso liste"
@@ -569,7 +563,7 @@ paths:
   /docs/locationPerso/{id}:
     get:
       security:
-        - BDE: []
+        - Auth: []
       parameters:
         - name: id
           in: path
@@ -604,7 +598,7 @@ paths:
                 $ref: "#/components/schemas/Message"
     delete:
       security:
-        - BDE: []
+        - Auth: []
       parameters:
         - name: id
           in: path
@@ -640,7 +634,7 @@ paths:
   /docs/locationAsso/{id}:
     get:
       security:
-        - BDE: []
+        - Auth: []
       parameters:
         - name: id
           in: path
@@ -675,7 +669,7 @@ paths:
                 $ref: "#/components/schemas/Message"
     delete:
       security:
-        - BDE: []
+        - Auth: []
       parameters:
         - name: id
           in: path
@@ -711,7 +705,7 @@ paths:
   /docs/materiel/{id}:
     get:
       security:
-        - BDE: []
+        - Auth: []
       parameters:
         - name: id
           in: path
@@ -746,7 +740,7 @@ paths:
                 $ref: "#/components/schemas/Message"
     delete:
       security:
-        - BDE: []
+        - Auth: []
       parameters:
         - name: id
           in: path
@@ -782,18 +776,10 @@ paths:
 
 components:
   securitySchemes:
-    Ceten:
+    Auth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
-    BDE:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    Admin:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: session
 
   schemas:
     # base types

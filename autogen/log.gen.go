@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	BDEScopes = "BDE.Scopes"
+	AuthScopes = "Auth.Scopes"
 )
 
 // Defines values for PermanenceStatus.
@@ -236,7 +236,7 @@ type ServerInterfaceWrapper struct {
 func (w *ServerInterfaceWrapper) GetAccount(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetAccount(ctx)
@@ -254,8 +254,6 @@ func (w *ServerInterfaceWrapper) GetAccountsClubId(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter clubId: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
-
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetAccountsClubId(ctx, clubId)
 	return err
@@ -265,7 +263,7 @@ func (w *ServerInterfaceWrapper) GetAccountsClubId(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetDocsLocationAsso(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetDocsLocationAsso(ctx)
@@ -292,7 +290,7 @@ func (w *ServerInterfaceWrapper) DeleteDocsLocationAssoId(ctx echo.Context) erro
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.DeleteDocsLocationAssoId(ctx, id)
@@ -310,7 +308,7 @@ func (w *ServerInterfaceWrapper) GetDocsLocationAssoId(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetDocsLocationAssoId(ctx, id)
@@ -321,7 +319,7 @@ func (w *ServerInterfaceWrapper) GetDocsLocationAssoId(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetDocsLocationPerso(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetDocsLocationPerso(ctx)
@@ -348,7 +346,7 @@ func (w *ServerInterfaceWrapper) DeleteDocsLocationPersoId(ctx echo.Context) err
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.DeleteDocsLocationPersoId(ctx, id)
@@ -366,7 +364,7 @@ func (w *ServerInterfaceWrapper) GetDocsLocationPersoId(ctx echo.Context) error 
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetDocsLocationPersoId(ctx, id)
@@ -384,7 +382,7 @@ func (w *ServerInterfaceWrapper) DeleteDocsMaterielId(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.DeleteDocsMaterielId(ctx, id)
@@ -402,7 +400,7 @@ func (w *ServerInterfaceWrapper) GetDocsMaterielId(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetDocsMaterielId(ctx, id)
@@ -440,7 +438,7 @@ func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) PostPlanningAutofill(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{"BDE", "Respo_Log"})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostPlanningAutofill(ctx)
@@ -451,7 +449,7 @@ func (w *ServerInterfaceWrapper) PostPlanningAutofill(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetPlanningWeekPriority(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{"BDE"})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetPlanningWeekPriority(ctx)
@@ -462,7 +460,7 @@ func (w *ServerInterfaceWrapper) GetPlanningWeekPriority(ctx echo.Context) error
 func (w *ServerInterfaceWrapper) PatchPlanningWeekPriority(ctx echo.Context) error {
 	var err error
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{"BDE"})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PatchPlanningWeekPriority(ctx)
@@ -480,7 +478,7 @@ func (w *ServerInterfaceWrapper) DeletePlanningAccountID(ctx echo.Context) error
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{"BDE"})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.DeletePlanningAccountID(ctx, accountID)
@@ -498,8 +496,6 @@ func (w *ServerInterfaceWrapper) GetPlanningAccountID(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
-
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetPlanningAccountID(ctx, accountID)
 	return err
@@ -516,7 +512,7 @@ func (w *ServerInterfaceWrapper) PatchPlanningAccountID(ctx echo.Context) error 
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{"BDE"})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PatchPlanningAccountID(ctx, accountID)
@@ -534,7 +530,7 @@ func (w *ServerInterfaceWrapper) PostPlanningAccountID(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter accountID: %s", err))
 	}
 
-	ctx.Set(BDEScopes, []string{})
+	ctx.Set(AuthScopes, []string{"BDE"})
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostPlanningAccountID(ctx, accountID)
@@ -2252,35 +2248,35 @@ func (sh *strictHandler) PostRegister(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -38,21 +38,8 @@ func (s Server) GetPlanningAccountID(ctx echo.Context, accountID int) error {
 
 // PatchPlanningAccountID implements autogen.ServerInterface.
 func (s Server) PatchPlanningAccountID(ctx echo.Context, accountID int) error {
-	accID, err := GetAccountIDFromJWT(ctx)
-	if err != nil {
-		autogen.PatchPlanningAccountID401JSONResponse{Message: "Unauthorized"}.VisitPatchPlanningAccountIDResponse(ctx.Response())
-		return err
-	}
-	isBDE, err := IsMemberOfBDE(s.db, accID)
-	if err != nil {
-		autogen.PatchPlanningAccountID500JSONResponse{Message: "Can't access to DB"}.VisitPatchPlanningAccountIDResponse(ctx.Response())
-	}
-	if !isBDE {
-		autogen.PatchPlanningAccountID401JSONResponse{Message: "Unauthorized"}.VisitPatchPlanningAccountIDResponse(ctx.Response())
-		return nil
-	}
 	var req autogen.Permanence
-	err = ctx.Bind(&req)
+	err := ctx.Bind(&req)
 	if err != nil {
 		autogen.PatchPlanningAccountID400JSONResponse{Message: "Wrong Request"}.VisitPatchPlanningAccountIDResponse(ctx.Response())
 		return err
@@ -85,21 +72,8 @@ func (s Server) PatchPlanningAccountID(ctx echo.Context, accountID int) error {
 }
 
 func (s Server) PostPlanningAccountID(ctx echo.Context, accountID int) error {
-	accID, err := GetAccountIDFromJWT(ctx)
-	if err != nil {
-		autogen.PostPlanningAccountID401JSONResponse{Message: "Unauthorized"}.VisitPostPlanningAccountIDResponse(ctx.Response())
-		return err
-	}
-	isBDE, err := IsMemberOfBDE(s.db, accID)
-	if err != nil {
-		autogen.PostPlanningAccountID500JSONResponse{Message: "Can't access to DB"}.VisitPostPlanningAccountIDResponse(ctx.Response())
-	}
-	if !isBDE {
-		autogen.PostPlanningAccountID401JSONResponse{Message: "Unauthorized"}.VisitPostPlanningAccountIDResponse(ctx.Response())
-		return nil
-	}
 	var req autogen.Permanence
-	err = ctx.Bind(&req)
+	err := ctx.Bind(&req)
 	if err != nil {
 		autogen.PostPlanningAccountID400JSONResponse{Message: "Wrong Request"}.VisitPostPlanningAccountIDResponse(ctx.Response())
 		return err
@@ -132,21 +106,8 @@ func (s Server) PostPlanningAccountID(ctx echo.Context, accountID int) error {
 
 // DeletePlanningAccountID implements autogen.ServerInterface.
 func (s Server) DeletePlanningAccountID(ctx echo.Context, accountID int) error {
-	accID, err := GetAccountIDFromJWT(ctx)
-	if err != nil {
-		autogen.DeletePlanningAccountID401JSONResponse{Message: "Unauthorized"}.VisitDeletePlanningAccountIDResponse(ctx.Response())
-		return err
-	}
-	isBDE, err := IsMemberOfBDE(s.db, accID)
-	if err != nil {
-		autogen.DeletePlanningAccountID500JSONResponse{Message: "Can't access to DB"}.VisitDeletePlanningAccountIDResponse(ctx.Response())
-	}
-	if !isBDE {
-		autogen.DeletePlanningAccountID401JSONResponse{Message: "Unauthorized"}.VisitDeletePlanningAccountIDResponse(ctx.Response())
-		return nil
-	}
 	var req autogen.Permanence
-	err = ctx.Bind(&req)
+	err := ctx.Bind(&req)
 	if err != nil {
 		autogen.DeletePlanningAccountID400JSONResponse{Message: "Wrong Request"}.VisitDeletePlanningAccountIDResponse(ctx.Response())
 		return err
